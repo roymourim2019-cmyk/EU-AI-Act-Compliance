@@ -6,18 +6,22 @@ import { api } from "@/lib/api";
 import { RISK_META } from "@/lib/quiz-data";
 import { track } from "@/lib/analytics";
 import { toast } from "sonner";
-import { Mail, ArrowRight, Inbox, Lock } from "lucide-react";
+import { Mail, ArrowRight, Inbox, Lock, Check, GitCompare, X } from "lucide-react";
+
+const MAX_COMPARE = 3;
 
 export default function RecoverPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [selected, setSelected] = useState([]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
+    setSelected([]);
     try {
       const { data } = await api.post("/reports/recover", { email });
       setResult(data);
@@ -33,10 +37,27 @@ export default function RecoverPage() {
     }
   };
 
+  const toggle = (id) => {
+    setSelected((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= MAX_COMPARE) {
+        toast.info(`Up to ${MAX_COMPARE} reports at a time.`);
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
+  const startCompare = () => {
+    if (selected.length < 2) return;
+    track("compare_started", { count: selected.length });
+    navigate(`/compare?ids=${selected.join(",")}`);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col" data-testid="recover-page">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 pb-24">
         <section className="border-b border-foreground/10">
           <div className="mx-auto max-w-[1100px] px-6 md:px-10 py-16 md:py-24 grid md:grid-cols-12 gap-10 items-start">
             <div className="md:col-span-7">
@@ -46,7 +67,7 @@ export default function RecoverPage() {
               </h1>
               <p className="mt-6 text-foreground/70 leading-relaxed max-w-xl">
                 Enter the email you used at checkout. We&apos;ll show your last five paid reports so you
-                can jump straight back in. No password. No login wall.
+                can jump back in — or select two or three to compare side-by-side.
               </p>
 
               <form onSubmit={onSubmit} className="mt-10 flex flex-col sm:flex-row gap-0 border border-foreground/20 max-w-xl" data-testid="recover-form">
@@ -78,11 +99,11 @@ export default function RecoverPage() {
               </p>
             </div>
             <aside className="md:col-span-4 md:col-start-9 border border-foreground/20 p-6">
-              <div className="label-eyebrow text-foreground/60 mb-3">Why not just log in?</div>
+              <div className="label-eyebrow text-foreground/60 mb-3">Compare multiple systems</div>
               <p className="text-sm text-foreground/70 leading-relaxed">
-                Because your report is a one-time artifact, not a SaaS account. You paid $49 once —
-                keeping a login around would just be friction. A session link is enough, and this
-                form is the fallback when the link gets lost in your inbox.
+                If your organisation ran several quizzes, tick 2–3 reports and compare obligations,
+                scores, and unique risks side-by-side. Useful when deciding which AI system to
+                deprecate or fix first.
               </p>
             </aside>
           </div>
@@ -121,37 +142,63 @@ export default function RecoverPage() {
                   {result.sessions.map((s) => {
                     const meta = RISK_META[s.risk_level] || RISK_META.minimal;
                     const paidAt = s.paid_at ? new Date(s.paid_at).toLocaleDateString() : "—";
+                    const isSelected = selected.includes(s.session_id);
                     return (
                       <li
                         key={s.session_id}
-                        onClick={() => navigate(`/report/${s.session_id}`)}
-                        className="group p-6 border-r border-b border-foreground/15 cursor-pointer hover:bg-foreground hover:text-background transition-all"
+                        className={`relative p-6 border-r border-b border-foreground/15 transition-all ${
+                          isSelected ? "bg-[#0020C2]/5" : ""
+                        }`}
                         data-testid={`recover-session-${s.session_id.slice(0, 8)}`}
                       >
-                        <div className="flex items-start justify-between mb-4">
-                          <div
-                            className="inline-flex items-center gap-2 px-2 py-1 border label-eyebrow"
-                            style={{ borderColor: meta.color, color: meta.color }}
-                          >
-                            <span className="h-2 w-2 block" style={{ background: meta.color }} />
-                            {meta.label}
+                        {/* select checkbox */}
+                        <button
+                          onClick={() => toggle(s.session_id)}
+                          className={`absolute top-4 left-4 h-5 w-5 border flex items-center justify-center transition-all ${
+                            isSelected
+                              ? "bg-[#0020C2] border-[#0020C2] text-white"
+                              : "border-foreground/30 bg-background hover:border-foreground"
+                          }`}
+                          aria-label={isSelected ? "Deselect for compare" : "Select for compare"}
+                          data-testid={`select-session-${s.session_id.slice(0, 8)}`}
+                        >
+                          {isSelected && <Check className="h-3 w-3" strokeWidth={3} />}
+                        </button>
+
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => navigate(`/report/${s.session_id}`)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") navigate(`/report/${s.session_id}`);
+                          }}
+                          className="cursor-pointer pl-8 group"
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div
+                              className="inline-flex items-center gap-2 px-2 py-1 border label-eyebrow"
+                              style={{ borderColor: meta.color, color: meta.color }}
+                            >
+                              <span className="h-2 w-2 block" style={{ background: meta.color }} />
+                              {meta.label}
+                            </div>
+                            <Lock className="h-4 w-4 text-foreground/40" />
                           </div>
-                          <Lock className="h-4 w-4 text-foreground/40 group-hover:text-background/60" />
-                        </div>
-                        <div className="flex items-baseline gap-2 mb-3">
-                          <span className="font-display text-5xl tabular-nums mono">{s.score}</span>
-                          <span className="text-sm text-foreground/50 group-hover:text-background/60">/ 100</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="mono text-foreground/50 group-hover:text-background/60">
-                            {s.session_id.slice(0, 8)}…
-                          </span>
-                          <span className="label-eyebrow text-foreground/50 group-hover:text-background/60">
-                            paid {paidAt}
-                          </span>
-                        </div>
-                        <div className="mt-4 label-eyebrow flex items-center gap-1 text-foreground/60 group-hover:text-background">
-                          Open report <ArrowRight className="h-3.5 w-3.5" />
+                          <div className="flex items-baseline gap-2 mb-3">
+                            <span className="font-display text-5xl tabular-nums mono">{s.score}</span>
+                            <span className="text-sm text-foreground/50">/ 100</span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="mono text-foreground/50">
+                              {s.session_id.slice(0, 8)}…
+                            </span>
+                            <span className="label-eyebrow text-foreground/50">
+                              paid {paidAt}
+                            </span>
+                          </div>
+                          <div className="mt-4 label-eyebrow flex items-center gap-1 text-foreground/60 group-hover:text-[#0020C2]">
+                            Open report <ArrowRight className="h-3.5 w-3.5" />
+                          </div>
                         </div>
                       </li>
                     );
@@ -162,6 +209,38 @@ export default function RecoverPage() {
           </section>
         )}
       </main>
+
+      {/* Compare action bar — appears when 2+ selected */}
+      {selected.length >= 2 && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 bg-foreground text-background border-t border-background/20"
+          data-testid="compare-bar"
+        >
+          <div className="mx-auto max-w-[1100px] px-6 md:px-10 py-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="font-display text-lg">{selected.length} selected</span>
+              <span className="label-eyebrow text-background/60 hidden md:inline">Choose up to {MAX_COMPARE}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelected([])}
+                className="inline-flex items-center gap-1 h-10 px-4 border border-background/30 label-eyebrow hover:bg-background hover:text-foreground transition-all"
+                data-testid="clear-selection-btn"
+              >
+                <X className="h-3.5 w-3.5" /> Clear
+              </button>
+              <button
+                onClick={startCompare}
+                className="inline-flex items-center gap-2 h-10 px-5 bg-[#0020C2] text-white label-eyebrow hover:bg-[#00189B] transition-all"
+                data-testid="compare-go-btn"
+              >
+                <GitCompare className="h-4 w-4" /> Compare reports
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

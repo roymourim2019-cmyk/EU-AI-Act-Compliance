@@ -8,6 +8,7 @@ import QuizPage from "@/pages/QuizPage";
 import ResultsPage from "@/pages/ResultsPage";
 import ReportPage from "@/pages/ReportPage";
 import RecoverPage from "@/pages/RecoverPage";
+import ComparePage from "@/pages/ComparePage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/results/:sessionId" element={<ResultsPage />} />
           <Route path="/report/:sessionId" element={<ReportPage />} />
           <Route path="/recover" element={<RecoverPage />} />
+          <Route path="/compare" element={<ComparePage />} />
         </Routes>
         <Toaster position="bottom-right" />
       </BrowserRouter>
