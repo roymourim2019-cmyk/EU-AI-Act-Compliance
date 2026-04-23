@@ -30,21 +30,6 @@ export default function Pricing() {
           </div>
         </div>
 
-        <div
-          className="mb-8 border border-[#EAB308] bg-[#EAB308]/10 text-foreground px-5 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3"
-          data-testid="launch-pricing-band"
-        >
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-4 w-4 text-[#EAB308]" />
-            <div>
-              <span className="font-display text-base md:text-lg tracking-tight">Early-access launch prices</span>
-            </div>
-          </div>
-          <div className="label-eyebrow text-foreground/60">
-            Rises 40% on 1 Sep 2026 · first 500 customers only
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 border-t border-l border-foreground/15">
           {tiers.map((t) => {
             const isPopular = !!t.popular;
