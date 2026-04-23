@@ -98,30 +98,57 @@ export default function ResultsPage() {
                 {meta.label}
               </div>
               <h1 className="font-display tracking-tighter leading-[0.95]">
-                <span className="text-7xl md:text-[160px] tabular-nums mono" data-testid="risk-score">
-                  {result.score}
-                </span>
-                <span className="text-4xl md:text-5xl text-foreground/40"> / 100</span>
+                {result.paid ? (
+                  <>
+                    <span className="text-7xl md:text-[160px] tabular-nums mono" data-testid="risk-score">
+                      {result.score}
+                    </span>
+                    <span className="text-4xl md:text-5xl text-foreground/40"> / 100</span>
+                  </>
+                ) : (
+                  <span className="inline-flex items-baseline gap-4" data-testid="risk-score-locked">
+                    <span className="text-7xl md:text-[160px] tabular-nums mono text-foreground/20 select-none">
+                      ??
+                    </span>
+                    <span className="text-4xl md:text-5xl text-foreground/40"> / 100</span>
+                  </span>
+                )}
               </h1>
-              <p className="mt-6 text-lg md:text-xl font-display tracking-tight max-w-2xl">{meta.copy}</p>
-              <p className="mt-4 text-foreground/70 leading-relaxed max-w-2xl">
-                Classification driven by: <span className="mono text-foreground">{result.art_references.join(" · ")}</span>
+              <p className="mt-6 text-lg md:text-xl font-display tracking-tight max-w-2xl">
+                You are classified <span className="mono" style={{ color: meta.color }}>{meta.label}</span>.
+                {!result.paid && " The exact score, obligations, deadlines, and penalty details are behind the paywall."}
               </p>
+              {result.paid && (
+                <p className="mt-4 text-foreground/70 leading-relaxed max-w-2xl">
+                  Classification driven by: <span className="mono text-foreground">{result.art_references.join(" · ")}</span>
+                </p>
+              )}
 
               <div className="mt-10 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => { track("unlock_clicked", { risk_level: result.risk_level, placement: "hero" }); setCheckoutOpen(true); }}
-                  className="inline-flex items-center gap-2 h-12 px-6 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
-                  data-testid="unlock-report-btn"
-                >
-                  <Lock className="h-4 w-4" /> Unlock full report · $49
-                </button>
+                {!result.paid && (
+                  <button
+                    onClick={() => { track("unlock_clicked", { risk_level: result.risk_level, placement: "hero" }); setCheckoutOpen(true); }}
+                    className="inline-flex items-center gap-2 h-12 px-6 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
+                    data-testid="unlock-report-btn"
+                  >
+                    <Lock className="h-4 w-4" /> Pick a tier · from $29
+                  </button>
+                )}
+                {result.paid && (
+                  <button
+                    onClick={() => navigate(`/report/${sessionId}`)}
+                    className="inline-flex items-center gap-2 h-12 px-6 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
+                    data-testid="open-report-btn"
+                  >
+                    Open full report <ArrowRight className="h-4 w-4" />
+                  </button>
+                )}
                 <button
                   onClick={share}
                   className="inline-flex items-center gap-2 h-12 px-6 border border-foreground/20 hover:bg-foreground hover:text-background label-eyebrow transition-all"
                   data-testid="share-btn"
                 >
-                  <Share2 className="h-4 w-4" /> Share result
+                  <Share2 className="h-4 w-4" /> Share tier
                 </button>
                 <button
                   onClick={() => navigate("/quiz")}
@@ -150,42 +177,52 @@ export default function ResultsPage() {
               </div>
             </div>
 
-            {/* Right obligations teaser */}
-            <div className="md:col-span-5 border border-foreground/20">
+            {/* Right panel — value-prop ladder instead of teaser */}
+            <div className="md:col-span-5 border border-foreground/20" data-testid="tier-ladder">
               <div className="px-5 py-3 border-b border-foreground/20 flex items-center justify-between label-eyebrow">
-                <span>Top obligations</span>
-                <span className="mono">Teaser</span>
+                <span>What&apos;s behind the paywall</span>
+                <span className="mono">3 tiers</span>
               </div>
               <ul className="divide-y divide-foreground/10">
-                {result.obligations.slice(0, 3).map((o, i) => (
-                  <li key={i} className="px-5 py-4 flex items-start gap-3">
-                    <span className="mono text-xs text-foreground/50 mt-0.5 w-6">/{String(i + 1).padStart(2, "0")}</span>
-                    <span className="text-sm">{o}</span>
+                {[
+                  { tier: "Starter", price: "$29", items: "Score · obligations · deadlines · penalty · PDF" },
+                  { tier: "Pro", price: "$79", items: "+ FRIA · compliance badge · supplier questionnaire · GC invite", popular: true },
+                  { tier: "Bundle", price: "$149", items: "5 systems · portfolio compare + PDF export" },
+                ].map((t, i) => (
+                  <li key={i} className="px-5 py-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-display text-base tracking-tight">
+                        {t.tier}
+                        {t.popular && (
+                          <span className="ml-2 label-eyebrow text-[10px] bg-[#EAB308] text-black px-1.5 py-0.5">
+                            Popular
+                          </span>
+                        )}
+                      </span>
+                      <span className="font-display text-lg mono tabular-nums">{t.price}</span>
+                    </div>
+                    <div className="text-xs text-foreground/60 leading-relaxed">{t.items}</div>
                   </li>
                 ))}
-                {result.obligations.length > 3 &&
-                  Array.from({ length: Math.min(3, result.obligations.length - 3) }).map((_, i) => (
-                    <li key={`locked-${i}`} className="px-5 py-4 flex items-start gap-3 blur-[2px] select-none">
-                      <span className="mono text-xs text-foreground/50 mt-0.5 w-6">/{String(i + 4).padStart(2, "0")}</span>
-                      <span className="text-sm">████ ██████ ██ ████████ ████████████.</span>
-                    </li>
-                  ))}
               </ul>
               <div className="px-5 py-4 border-t border-foreground/20 bg-foreground/[0.03] flex items-center justify-between">
-                <span className="label-eyebrow text-foreground/60">+{Math.max(0, result.obligations.length - 3)} more · FRIA · badge</span>
-                <button
-                  onClick={() => { track("unlock_clicked", { risk_level: result.risk_level, placement: "sidebar" }); setCheckoutOpen(true); }}
-                  className="inline-flex items-center gap-1 label-eyebrow hover:text-[#0020C2]"
-                  data-testid="unlock-inline-btn"
-                >
-                  Unlock <ArrowRight className="h-3.5 w-3.5" />
-                </button>
+                <span className="label-eyebrow text-foreground/60">One-time · lifetime access</span>
+                {!result.paid && (
+                  <button
+                    onClick={() => { track("unlock_clicked", { risk_level: result.risk_level, placement: "sidebar" }); setCheckoutOpen(true); }}
+                    className="inline-flex items-center gap-1 label-eyebrow hover:text-[#0020C2]"
+                    data-testid="unlock-inline-btn"
+                  >
+                    Pick a tier <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Penalty + deadlines strip */}
+        {/* Penalty + deadlines strip (paid only) */}
+        {result.paid && (
         <section className="border-b border-foreground/10 bg-foreground text-background">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-12 grid md:grid-cols-2 gap-8">
             <div>
@@ -205,8 +242,9 @@ export default function ResultsPage() {
             </div>
           </div>
         </section>
+        )}
 
-        {result.dpdp_findings?.length > 0 && (
+        {result.paid && result.dpdp_findings?.length > 0 && (
           <section className="border-b border-foreground/10">
             <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-12">
               <div className="label-eyebrow text-foreground/60 mb-3">India DPDP findings</div>

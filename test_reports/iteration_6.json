@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 9 — 3-tier pricing model (Free $0 / Starter $29 / Pro $79 / Bundle $149). Backend: all 41 pytest tests pass (17 existing + 8 new tier tests in test_tiers.py + 16 regression). Tier pricing correct (29/79/149), invalid tier falls back to 'pro', report endpoint returns tier & amount_usd & credits_remaining. Frontend: Pricing renders 4 cards with correct testids and locked line-throughs on Free; 'Most popular' ribbon on Pro; CTAs store preferred_tier in sessionStorage & navigate to /quiz?tier=<id>. No 'Book a call' / mailto / Enterprise / hello@roys-enterprise.com anywhere. FAQ left column ends after H2. Results UNPAID shows risk-score-locked '??' + tier-ladder + 'Pick a tier · from $29' CTA; penalty block hidden. Results PAID shows numeric score (30/100) + open-report-btn; unlock-btn hidden. MockCheckoutModal tier-picker works; pay button label updates ('PAY $29 · STARTER (MOCK)' / 'PAY $149 · BUNDLE (MOCK)'). ReportPage tier gating verified: STARTER hides FRIA/procurement/badge and shows tier-upgrade-hint; PRO and BUNDLE show all and hide hint. Paid banner displays '<TIER> TIER UNLOCKED'. One minor spec deviation (tier-ladder remains rendered on PAID results; only its inner CTA hides). 1 stale backend test assertion fixed (was amount==49).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "ResultsPage (PAID)", "issues": ["Spec called for tier-ladder to be hidden when paid. Current impl keeps the 3-tier sidebar visible on paid view and only hides the 'Pick a tier' inline CTA. Low-impact since paid users see 'Open full report'; decide if ladder should be replaced with upsell/credits remaining or removed entirely."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_tiers.py",
+    "/app/backend/tests/test_rate_limits.py",
+    "/app/backend/tests/test_recover.py",
+    "/app/backend/tests/test_stats.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Consider hiding or repurposing the tier-ladder sidebar on PAID ResultsPage (currently still renders the 3-tier price table after successful payment; only the inline CTA hides)."
+  ],
+  "critical_code_review_comments": [
+    "server.py mock_checkout: silent fallback when req.tier is invalid ('invalid' → 'pro') masks client bugs. Prefer returning HTTP 400 with the list of valid tiers so the frontend never silently charges the wrong amount.",
+    "ResultsPage.jsx always renders the tier-ladder regardless of paid state; only its CTA is conditional. This leaves a redundant pricing grid on the paid scorecard. Wrap the whole block in {!result.paid && (...)} or swap to a 'Credits remaining' widget for Bundle customers.",
+    "Pricing.jsx TIERS array is a 200+ line module-level constant with hardcoded USD + CTA copy. For A/B pricing experiments, lift to a config/JSON or env-driven map (e.g., fetched from /api/pricing) to decouple copy from deploy.",
+    "MockCheckoutModal.jsx: pay button label uses toUpperCase on tier id ('STARTER (MOCK)') — fine today, but if you localise the modal, display the label from TIER_PRICING.label server-side to avoid drift between backend ('Starter') and frontend ('STARTER').",
+    "No frontend guard prevents a user from selecting tier-option-bundle in checkout after starting the quiz with ?tier=starter — the picker always rebases to sessionStorage. This is arguably by design, but worth documenting so analytics on 'preferred_tier' doesn't get conflated with 'paid_tier'."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_tiers.py"
+  ],
+  "success_rate": {"backend": "100% (41/41)", "frontend": "100% core assertions (29/29 boolean checks + 3 tier-report matrix)"},
+  "test_credentials": "None required.",
+  "seed_data_creation": "Created ~12 TEST_-prefixed quiz sessions with paid status (tiers: starter/pro/bundle) as part of test_tiers.py and Playwright UI tests. Baseline /api/stats offsets unaffected.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend tier pricing map lives in server.py TIER_PRICING (starter=29/1cr, pro=79/1cr, bundle=149/5cr). /api/checkout/mock accepts {session_id, email?, tier?} — default+invalid both fall back to 'pro'. Response shape: {status, payment_id, amount, tier}. Paid session docs now include tier/amount_usd/credits_remaining/paid_at. Frontend: Pricing CTA → sessionStorage.preferred_tier → QuizPage reads ?tier=; MockCheckoutModal initialises from preferred_tier. ResultsPage gates score+obligations+penalty+deadlines on paid flag; tier-ladder currently always rendered. ReportPage gates FRIA/supplier/GC/badge on tier !== 'starter'. Paid banner text: '<TIER> TIER UNLOCKED'. Use _IPRotatingSession for any new backend tests to avoid SlowAPI rate-limit cross-pollution.",
+  "rca of the issue": "N/A — no functional issues. Fixed one stale assertion in test_backend.py (pay amount 49 → 79 to match new 'pro' default)."
+}

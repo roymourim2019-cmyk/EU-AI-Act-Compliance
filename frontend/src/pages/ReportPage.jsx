@@ -178,7 +178,7 @@ export default function ReportPage() {
       <div className="bg-[#16A34A] text-white">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-2.5 flex items-center gap-3 label-eyebrow">
           <ShieldCheck className="h-4 w-4" />
-          Payment confirmed — full access unlocked · {report.payment_id}
+          Payment confirmed — {(report.tier || "pro").toUpperCase()} tier unlocked · {report.payment_id}
         </div>
       </div>
 
@@ -208,7 +208,7 @@ export default function ReportPage() {
               >
                 <Download className="h-4 w-4" /> Download branded PDF
               </button>
-              {report.fria_template && (
+              {report.fria_template && (report.tier !== "starter") && (
                 <button
                   onClick={downloadFRIA}
                   className="inline-flex items-center gap-2 w-full justify-center h-11 border border-foreground/20 hover:bg-foreground hover:text-background label-eyebrow transition-all"
@@ -217,6 +217,7 @@ export default function ReportPage() {
                   <FileText className="h-4 w-4" /> FRIA starter (CSV)
                 </button>
               )}
+              {(report.tier !== "starter") && (
               <button
                 onClick={downloadProcurement}
                 className="inline-flex items-center gap-2 w-full justify-center h-11 border border-foreground/20 hover:bg-foreground hover:text-background label-eyebrow transition-all"
@@ -224,7 +225,8 @@ export default function ReportPage() {
               >
                 <Building2 className="h-4 w-4" /> Supplier questionnaire (CSV)
               </button>
-              {(() => {
+              )}
+              {(report.tier !== "starter") && (() => {
                 const subject = `EU AI Act review needed — ${meta.label} (score ${report.score}/100)`;
                 const link = `${window.location.origin}/report/${report.session_id}`;
                 const body = [
@@ -256,6 +258,20 @@ export default function ReportPage() {
                 );
               })()}
               <div className="label-eyebrow text-foreground/50 text-center pt-2">Lifetime access · no subscription</div>
+              {report.tier === "starter" && (
+                <div className="border-t border-foreground/15 pt-3 mt-2" data-testid="tier-upgrade-hint">
+                  <p className="text-xs text-foreground/60 leading-relaxed mb-2">
+                    FRIA starter, supplier questionnaire, compliance badge, and GC-invite email are available on Pro ($79) and Bundle ($149).
+                  </p>
+                  <a
+                    href="#pricing"
+                    className="label-eyebrow text-[#0020C2] hover:underline inline-flex items-center gap-1"
+                    data-testid="upgrade-hint-link"
+                  >
+                    See what you&apos;re missing →
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -346,7 +362,8 @@ export default function ReportPage() {
           </section>
         )}
 
-        {/* Badge */}
+        {/* Badge — Pro & Bundle only */}
+        {report.tier !== "starter" && (
         <section className="border-b border-foreground/10">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-12">
             <div className="label-eyebrow text-foreground/60 mb-4">§ 06 · Compliance badge</div>
@@ -397,6 +414,7 @@ export default function ReportPage() {
             </div>
           </div>
         </section>
+        )}
       </main>
       <Footer />
     </div>

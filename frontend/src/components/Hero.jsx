@@ -56,7 +56,7 @@ export default function Hero() {
               className="inline-flex items-center gap-2 h-14 px-7 border border-foreground/30 hover:bg-foreground hover:text-background transition-all duration-200 label-eyebrow"
               data-testid="hero-see-pricing"
             >
-              Unlock full PDF · $49
+              Unlock full report · from $29
             </a>
           </div>
 

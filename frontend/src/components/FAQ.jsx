@@ -12,24 +12,24 @@ const FAQS = [
     a: "No. This is a diagnostic tool mapped to publicly available EU AI Act text. It surfaces obligations and deadlines so your legal counsel can move faster, but it doesn't replace them.",
   },
   {
-    q: "What exactly is in the $49 report?",
-    a: "A 10-section PDF: your risk tier, the exact statutory references, full obligations checklist, editable FRIA starter (Art 27), deadline tracker, penalty exposure, and a compliance badge with embed code. One-time purchase, lifetime access.",
+    q: "Which tier should I pick?",
+    a: "Starter ($29) is right if you just need the score and obligations. Pro ($79) adds everything your legal team actually needs (FRIA, supplier questionnaire, compliance badge, GC invite). Bundle ($149) is for teams auditing 5 AI systems — effective price $29.80 per system.",
   },
   {
     q: "Is this a subscription?",
-    a: "No. $49 is a one-time payment per report. You own the PDF forever — no recurring fees, no seat limits, no email capture required to keep access.",
+    a: "No. Every tier is a one-time payment. You own the PDF and artifacts forever — no recurring fees, no seat limits.",
   },
   {
     q: "Does the India DPDP toggle give me a separate report?",
-    a: "It adds a DPDP findings section inside the same report (consent, purpose limitation, DPO, cross-border transfers). Designed for teams operating in both EU and India.",
+    a: "It adds a DPDP findings section inside the Pro and Bundle reports (consent, purpose limitation, DPO, cross-border transfers). Designed for teams operating in both EU and India.",
   },
   {
     q: "Which version of the AI Act is this based on?",
     a: "Regulation (EU) 2024/1689 as published in the Official Journal, with deadlines reflecting the 2025–2027 phased rollout.",
   },
   {
-    q: "What if my use case doesn't fit any tier?",
-    a: "It does — every in-scope AI system falls into one of five tiers. If you're out of EU scope (no users, no placement), the tool says so.",
+    q: "What do I get on the free tier?",
+    a: "The free tier gives you the risk tier label (e.g., \"High-Risk\") — nothing more. You do not get the score, obligations, or any downloadable artifact. Upgrade to see the details.",
   },
 ];
 
@@ -42,9 +42,6 @@ export default function FAQ() {
           <h2 className="font-display text-4xl md:text-5xl tracking-tighter leading-[1]">
             Questions, answered.
           </h2>
-          <p className="mt-6 text-foreground/70 leading-relaxed">
-            If we didn&apos;t cover it, write to <span className="mono text-foreground">hello@roys-enterprise.com</span>.
-          </p>
         </div>
         <div className="md:col-span-7 md:col-start-6">
           <Accordion type="single" collapsible className="border-t border-foreground/15">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,22 +9,60 @@ import {
 import { api } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock, Check, Crown, Layers } from "lucide-react";
 
-export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess }) {
+const TIERS = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: 29,
+    tagline: "Single system · essentials",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: 79,
+    tagline: "Single system · everything legal needs",
+    popular: true,
+  },
+  {
+    id: "bundle",
+    name: "Bundle",
+    price: 149,
+    tagline: "5 systems · portfolio view",
+  },
+];
+
+export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess, initialTier }) {
   const [email, setEmail] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [tier, setTier] = useState(initialTier || "pro");
+
+  useEffect(() => {
+    if (!open) return;
+    const preferred =
+      initialTier ||
+      (typeof window !== "undefined" && sessionStorage.getItem("preferred_tier")) ||
+      "pro";
+    setTier(preferred === "free" ? "pro" : preferred);
+  }, [open, initialTier]);
+
+  const selected = TIERS.find((t) => t.id === tier) || TIERS[1];
 
   const pay = async (e) => {
     e.preventDefault();
     setProcessing(true);
     try {
-      await new Promise((r) => setTimeout(r, 900));
-      const { data } = await api.post("/checkout/mock", { session_id: sessionId, email: email || null });
-      track("checkout_completed", { amount_usd: 49, payment_id: data.payment_id });
-      toast.success(`Payment succeeded · ${data.payment_id}`);
+      await new Promise((r) => setTimeout(r, 800));
+      const { data } = await api.post("/checkout/mock", {
+        session_id: sessionId,
+        email: email || null,
+        tier,
+      });
+      track("checkout_completed", { amount_usd: data.amount, tier: data.tier, payment_id: data.payment_id });
+      toast.success(`Payment succeeded · ${selected.name} · $${data.amount}`);
       onSuccess?.(data);
-    } catch (e) {
+    } catch (err) {
       toast.error("Mock payment failed");
     } finally {
       setProcessing(false);
@@ -34,16 +72,16 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-md border border-foreground/20 p-0 rounded-none bg-background"
+        className="max-w-lg border border-foreground/20 p-0 rounded-none bg-background"
         data-testid="checkout-modal"
       >
         <div className="p-6 border-b border-foreground/15">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl tracking-tight flex items-center gap-2">
-              <Lock className="h-4 w-4" /> Unlock full report
+              <Lock className="h-4 w-4" /> Pick your tier
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Complete mock checkout to unlock your full EU AI Act compliance report.
+              Choose a pricing tier and complete the mock checkout to unlock your full EU AI Act compliance report.
             </DialogDescription>
           </DialogHeader>
           <p className="label-eyebrow text-foreground/60 mt-2">
@@ -51,10 +89,43 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess 
           </p>
         </div>
         <form onSubmit={pay} className="p-6 space-y-5">
-          <div className="border border-foreground/15 p-4 flex items-center justify-between">
-            <span className="label-eyebrow text-foreground/60">Total</span>
-            <span className="font-display text-3xl tracking-tight">$49.00</span>
+          {/* Tier picker */}
+          <div className="grid grid-cols-3 border border-foreground/15" data-testid="tier-picker">
+            {TIERS.map((t, i) => {
+              const active = tier === t.id;
+              return (
+                <button
+                  type="button"
+                  key={t.id}
+                  onClick={() => setTier(t.id)}
+                  className={`relative p-3 text-left ${
+                    i !== TIERS.length - 1 ? "border-r border-foreground/15" : ""
+                  } ${active ? "bg-foreground text-background" : "hover:bg-foreground/5"}`}
+                  data-testid={`tier-option-${t.id}`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="label-eyebrow text-[10px]">{t.name}</span>
+                    {active && <Check className="h-3 w-3" />}
+                  </div>
+                  <div className="font-display text-xl tabular-nums">${t.price}</div>
+                  {t.popular && (
+                    <span className="absolute top-0 right-0 bg-[#EAB308] text-black label-eyebrow text-[9px] px-1">
+                      Popular
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+
+          <div className="border border-foreground/15 p-4 flex items-center justify-between">
+            <div>
+              <div className="label-eyebrow text-foreground/60">Selected · {selected.name}</div>
+              <div className="text-xs text-foreground/70 mt-1">{selected.tagline}</div>
+            </div>
+            <span className="font-display text-3xl tracking-tight">${selected.price}.00</span>
+          </div>
+
           <div>
             <label className="label-eyebrow text-foreground/60 block mb-2" htmlFor="co-email">
               Email for the report
@@ -82,10 +153,10 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess 
             className="w-full h-12 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all disabled:opacity-50"
             data-testid="checkout-pay-btn"
           >
-            {processing ? "Processing…" : "Pay $49 (mock)"}
+            {processing ? "Processing…" : `Pay $${selected.price} · ${selected.name} (mock)`}
           </button>
           <p className="mono text-[11px] text-foreground/50 text-center">
-            Live Razorpay/Stripe integration can be plugged in at /api/checkout/mock
+            Live Razorpay gateway plugs into /api/checkout/mock with no frontend changes
           </p>
         </form>
       </DialogContent>

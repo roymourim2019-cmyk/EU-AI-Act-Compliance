@@ -1,37 +1,93 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Check, X, Building2, Sparkles, ArrowRight } from "lucide-react";
+import { Check, Sparkles, Crown, Layers } from "lucide-react";
 
-const FREE = [
-  "Full 10-question diagnostic",
-  "Instant 0–100 risk score + tier badge",
-  "Top-level obligations summary",
-  "Share your result",
-];
-const PAID = [
-  "Everything in Free",
-  "Full statutory obligations checklist",
-  "FRIA starter template (Art 27)",
-  "Deadline tracker (2025–2027)",
-  "Penalty exposure summary",
-  "Compliance badge (SVG + embed code)",
-  "Supplier questionnaire (CSV)",
-  "Portfolio comparison + PDF export",
-  "Invite-your-GC one-click email",
-  "Lifetime access — no subscription",
-];
-const ENTERPRISE = [
-  "20+ systems under one roof",
-  "White-label branded PDFs",
-  "Priority regulatory updates",
-  "Custom FRIA workshop (60 min)",
-  "Slack / MS Teams channel",
-  "Annual renewal at 30% off list",
+const TIERS = [
+  {
+    id: "free",
+    name: "Free",
+    price: "$0",
+    priceNote: "quiz only",
+    tagline: "Find out which tier you land in.",
+    features: [
+      "10-question diagnostic",
+      "Risk tier label (e.g., High-Risk)",
+      "Share the tier to your team",
+    ],
+    locked: [
+      "Risk score 0–100",
+      "Obligations checklist",
+      "Any downloadable artifact",
+    ],
+    cta: { label: "Take the free quiz", to: "/quiz?tier=free" },
+    icon: null,
+    accent: null,
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    price: "$29",
+    priceNote: "one-time · 1 system",
+    tagline: "The essentials — bring it to your next stand-up.",
+    features: [
+      "Full 0–100 risk score",
+      "Obligations checklist (all tiers)",
+      "Regulatory deadline tracker",
+      "Penalty exposure summary",
+      "Branded PDF download",
+      "Shareable report link",
+    ],
+    cta: { label: "Start quiz · unlock $29", to: "/quiz?tier=starter" },
+    icon: null,
+    accent: "starter",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: "$79",
+    priceNote: "one-time · 1 system",
+    tagline: "What your legal team actually needs.",
+    features: [
+      "Everything in Starter",
+      "FRIA starter template (Art 27)",
+      "Compliance badge (SVG + embed)",
+      "Supplier questionnaire (CSV, 22 Q)",
+      "Invite-your-GC email flow",
+      "India DPDP findings",
+    ],
+    cta: { label: "Start quiz · unlock $79", to: "/quiz?tier=pro" },
+    icon: Sparkles,
+    accent: "pro",
+    popular: true,
+  },
+  {
+    id: "bundle",
+    name: "Bundle",
+    price: "$149",
+    priceNote: "one-time · 5 systems",
+    tagline: "Audit the full AI portfolio once.",
+    features: [
+      "Everything in Pro × 5 reports",
+      "Portfolio comparison view",
+      "Comparison PDF export",
+      "Priority regulatory updates",
+      "Lifetime access across all 5",
+      "Effective price: $29.80 per system",
+    ],
+    cta: { label: "Start quiz · unlock $149", to: "/quiz?tier=bundle" },
+    icon: Layers,
+    accent: "bundle",
+  },
 ];
 
 export default function Pricing() {
-  const mailto =
-    "mailto:hello@roys-enterprise.com?subject=Enterprise%20plan%20%E2%80%94%20EU%20AI%20Act%20Compliance&body=Hi%2C%0A%0AWe%E2%80%99d%20like%20to%20explore%20the%20Enterprise%20plan%20for%20our%20AI%20portfolio.%0A%0ATeam%3A%0ANumber%20of%20AI%20systems%3A%0ADeployment%20region(s)%3A%0A%0AThanks.";
+  const pickTier = (id) => {
+    try {
+      sessionStorage.setItem("preferred_tier", id);
+    } catch (e) {
+      // ignore
+    }
+  };
 
   return (
     <section id="pricing" className="border-b border-foreground/10" data-testid="pricing-section">
@@ -40,16 +96,15 @@ export default function Pricing() {
           <div className="md:col-span-6">
             <div className="label-eyebrow text-foreground/60 mb-4">§ 05 · Pricing</div>
             <h2 className="font-display text-4xl md:text-5xl tracking-tighter leading-[1]">
-              One price. Yours<br /> to keep.
+              Pay once. No<br /> subscription. Ever.
             </h2>
           </div>
           <div className="md:col-span-5 md:col-start-8 text-foreground/70 leading-relaxed">
-            We don&apos;t believe in SaaS subscriptions for a one-time regulation. Run as many scans as you
-            like — pay once per report you actually want to keep.
+            Competitors charge $500–5,000 for EU AI Act compliance audits. We ship the same obligations
+            mapping as an editable artifact — for the cost of a lunch. Pick the layer that fits.
           </div>
         </div>
 
-        {/* Launch-pricing urgency band */}
         <div
           className="mb-8 border border-[#EAB308] bg-[#EAB308]/10 text-foreground px-5 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3"
           data-testid="launch-pricing-band"
@@ -57,107 +112,92 @@ export default function Pricing() {
           <div className="flex items-center gap-3">
             <Sparkles className="h-4 w-4 text-[#EAB308]" />
             <div>
-              <span className="font-display text-base md:text-lg tracking-tight">Early-access launch price · $49</span>
-              <span className="mono text-foreground/60 ml-3 line-through">$99</span>
+              <span className="font-display text-base md:text-lg tracking-tight">Early-access launch prices</span>
             </div>
           </div>
           <div className="label-eyebrow text-foreground/60">
-            Rises to $99 on 1 Sep 2026 · first 500 customers only
+            Rises 50% on 1 Sep 2026 · first 500 customers only
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 border-t border-l border-foreground/15">
-          {/* Free */}
-          <div className="p-8 md:p-10 border-r border-b border-foreground/15 bg-background">
-            <div className="flex items-center justify-between mb-8">
-              <div className="label-eyebrow text-foreground/60">Free tier</div>
-              <span className="label-eyebrow text-foreground/40">/ forever</span>
-            </div>
-            <div className="flex items-baseline gap-2 mb-8">
-              <span className="font-display text-6xl tracking-tighter">$0</span>
-              <span className="text-foreground/60 mono text-xs">·&nbsp;no card</span>
-            </div>
-            <ul className="space-y-3 mb-10">
-              {FREE.map((f) => (
-                <li key={f} className="flex items-start gap-3 text-sm">
-                  <Check className="h-4 w-4 mt-0.5 text-[#16A34A] shrink-0" />
-                  <span>{f}</span>
-                </li>
-              ))}
-              <li className="flex items-start gap-3 text-sm text-foreground/50">
-                <X className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>Downloadable PDF / FRIA template</span>
-              </li>
-            </ul>
-            <Link
-              to="/quiz"
-              className="inline-flex items-center justify-center w-full h-12 border border-foreground/30 hover:bg-foreground hover:text-background label-eyebrow transition-all duration-200"
-              data-testid="pricing-free-cta"
-            >
-              Start free scorecard
-            </Link>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-l border-foreground/15">
+          {TIERS.map((t) => {
+            const isPopular = !!t.popular;
+            const Icon = t.icon;
+            const cardCls = isPopular
+              ? "bg-foreground text-background"
+              : "bg-background text-foreground";
+            const borderText = isPopular ? "text-background/70" : "text-foreground/60";
+            const mutedText = isPopular ? "text-background/70" : "text-foreground/70";
+            const ctaCls = isPopular
+              ? "bg-[#0020C2] text-white hover:bg-[#00189B]"
+              : t.id === "free"
+              ? "border border-foreground/30 hover:bg-foreground hover:text-background"
+              : t.id === "bundle"
+              ? "bg-foreground text-background hover:bg-[#0020C2] hover:text-white"
+              : "border border-foreground/30 hover:bg-foreground hover:text-background";
 
-          {/* Paid */}
-          <div className="p-8 md:p-10 border-r border-b border-foreground/15 bg-foreground text-background relative">
-            <div className="absolute top-0 right-0 bg-[#0020C2] text-white label-eyebrow px-3 py-1">
-              Most popular
-            </div>
-            <div className="flex items-center justify-between mb-8">
-              <div className="label-eyebrow text-background/70">Full report</div>
-              <span className="label-eyebrow text-background/40">/ one-time</span>
-            </div>
-            <div className="flex items-baseline gap-2 mb-8">
-              <span className="font-display text-6xl tracking-tighter">$49</span>
-              <span className="text-background/70 mono text-xs line-through">$99</span>
-              <span className="label-eyebrow text-[#EAB308] ml-1">Launch</span>
-            </div>
-            <ul className="space-y-3 mb-10">
-              {PAID.map((f) => (
-                <li key={f} className="flex items-start gap-3 text-sm">
-                  <Check className="h-4 w-4 mt-0.5 text-[#EAB308] shrink-0" />
-                  <span className="text-background/90">{f}</span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              to="/quiz"
-              className="inline-flex items-center justify-center w-full h-12 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all duration-200"
-              data-testid="pricing-paid-cta"
-            >
-              Start quiz · unlock for $49
-            </Link>
-          </div>
-
-          {/* Enterprise */}
-          <div className="p-8 md:p-10 border-r border-b border-foreground/15 bg-background" data-testid="pricing-enterprise-card">
-            <div className="flex items-center justify-between mb-8">
-              <div className="label-eyebrow text-foreground/60 flex items-center gap-2">
-                <Building2 className="h-3.5 w-3.5" /> Enterprise
+            return (
+              <div
+                key={t.id}
+                className={`relative p-8 md:p-8 border-r border-b border-foreground/15 ${cardCls} flex flex-col`}
+                data-testid={`pricing-${t.id}-card`}
+              >
+                {isPopular && (
+                  <div className="absolute top-0 right-0 bg-[#EAB308] text-black label-eyebrow px-3 py-1">
+                    Most popular
+                  </div>
+                )}
+                <div className="flex items-center justify-between mb-6">
+                  <div className={`label-eyebrow flex items-center gap-2 ${borderText}`}>
+                    {Icon && <Icon className="h-3.5 w-3.5" />}
+                    {t.name}
+                  </div>
+                  <span className={`label-eyebrow ${isPopular ? "text-background/40" : "text-foreground/40"}`}>
+                    {t.priceNote}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 mb-5">
+                  <span className="font-display text-6xl tracking-tighter">{t.price}</span>
+                </div>
+                <p className={`mb-6 text-sm ${mutedText}`}>{t.tagline}</p>
+                <ul className="space-y-2 mb-6">
+                  {t.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <Check className={`h-4 w-4 mt-0.5 shrink-0 ${isPopular ? "text-[#EAB308]" : t.id === "bundle" ? "text-[#0020C2]" : "text-[#16A34A]"}`} />
+                      <span className={isPopular ? "text-background/90" : ""}>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                {t.locked && (
+                  <ul className="space-y-2 mb-6 opacity-50">
+                    {t.locked.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm line-through">
+                        <span className="mono text-xs mt-0.5 w-4">×</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Link
+                  to={t.cta.to}
+                  onClick={() => pickTier(t.id)}
+                  className={`mt-auto inline-flex items-center justify-center w-full h-12 label-eyebrow transition-all duration-200 ${ctaCls}`}
+                  data-testid={`pricing-${t.id}-cta`}
+                >
+                  {t.cta.label}
+                </Link>
               </div>
-              <span className="label-eyebrow text-foreground/40">/ custom</span>
-            </div>
-            <div className="flex items-baseline gap-2 mb-8">
-              <span className="font-display text-6xl tracking-tighter">Let&apos;s talk</span>
-            </div>
-            <ul className="space-y-3 mb-10">
-              {ENTERPRISE.map((f) => (
-                <li key={f} className="flex items-start gap-3 text-sm">
-                  <Check className="h-4 w-4 mt-0.5 text-[#0020C2] shrink-0" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <a
-              href={mailto}
-              className="inline-flex items-center justify-center gap-2 w-full h-12 border border-foreground/30 hover:bg-foreground hover:text-background label-eyebrow transition-all duration-200"
-              data-testid="pricing-enterprise-cta"
-            >
-              Book a call <ArrowRight className="h-3.5 w-3.5" />
-            </a>
-          </div>
+            );
+          })}
         </div>
+
+        <p className="mt-6 label-eyebrow text-foreground/50 text-center">
+          All tiers include lifetime access · no subscription · one-time payment
+        </p>
       </div>
     </section>
   );
 }
+
+export const PRICING_TIERS = TIERS;

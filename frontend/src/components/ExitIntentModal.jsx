@@ -60,9 +60,9 @@ export default function ExitIntentModal({ onUpgrade, enabled = true }) {
             className="mt-4 w-full inline-flex items-center justify-center gap-2 h-12 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
             data-testid="exit-intent-cta"
           >
-            Unlock for $49 <ArrowRight className="h-4 w-4" />
+            Pick a tier · from $29 <ArrowRight className="h-4 w-4" />
           </button>
-          <p className="label-eyebrow text-foreground/50 text-center">Early-access price · jumps to $99 on 1 Sep 2026</p>
+          <p className="label-eyebrow text-foreground/50 text-center">Early-access · Starter $29 · Pro $79 · Bundle $149</p>
         </div>
       </DialogContent>
     </Dialog>

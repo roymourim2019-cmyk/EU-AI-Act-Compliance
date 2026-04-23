@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { QUESTIONS, DPDP_QUESTIONS } from "@/lib/quiz-data";
 import { api } from "@/lib/api";
@@ -16,6 +16,7 @@ export default function QuizPage() {
     canonical: typeof window !== "undefined" ? window.location.origin + "/quiz" : "",
   });
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [dpdp, setDpdp] = useState(false);
@@ -26,8 +27,13 @@ export default function QuizPage() {
   useEffect(() => {
     if (firedStart.current) return;
     firedStart.current = true;
-    track("quiz_started", { total_questions: QUESTIONS.length });
-  }, []);
+    // Pass-through: store tier preference from pricing CTA for checkout later.
+    const tier = params.get("tier");
+    if (tier) {
+      try { sessionStorage.setItem("preferred_tier", tier); } catch (e) { /* ignore */ }
+    }
+    track("quiz_started", { total_questions: QUESTIONS.length, preferred_tier: tier || null });
+  }, [params]);
 
   const totalQuestions = QUESTIONS.length + (dpdp ? DPDP_QUESTIONS.length : 0);
   const allQuestions = useMemo(

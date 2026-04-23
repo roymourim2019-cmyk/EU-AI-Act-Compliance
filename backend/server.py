@@ -71,6 +71,14 @@ class QuizResult(BaseModel):
 class CheckoutRequest(BaseModel):
     session_id: str
     email: Optional[str] = None
+    tier: str = "pro"  # "starter" | "pro" | "bundle"
+
+
+TIER_PRICING = {
+    "starter": {"amount_usd": 29, "credits": 1, "label": "Starter"},
+    "pro": {"amount_usd": 79, "credits": 1, "label": "Pro"},
+    "bundle": {"amount_usd": 149, "credits": 5, "label": "Bundle"},
+}
 
 
 class SubscribeRequest(BaseModel):
@@ -308,22 +316,33 @@ async def mock_checkout(req: CheckoutRequest):
     doc = await db.quiz_sessions.find_one({"session_id": req.session_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Session not found")
+    tier = req.tier if req.tier in TIER_PRICING else "pro"
+    pricing = TIER_PRICING[tier]
     payment_id = f"mock_pay_{uuid.uuid4().hex[:12]}"
     await db.quiz_sessions.update_one(
         {"session_id": req.session_id},
-        {"$set": {"paid": True, "payment_id": payment_id, "paid_at": datetime.now(timezone.utc).isoformat(), "email": req.email or doc.get("email")}},
+        {"$set": {
+            "paid": True,
+            "payment_id": payment_id,
+            "tier": tier,
+            "amount_usd": pricing["amount_usd"],
+            "credits_remaining": pricing["credits"],
+            "paid_at": datetime.now(timezone.utc).isoformat(),
+            "email": req.email or doc.get("email"),
+        }},
     )
     await db.payments.insert_one(
         {
             "payment_id": payment_id,
             "session_id": req.session_id,
-            "amount_usd": 49,
+            "tier": tier,
+            "amount_usd": pricing["amount_usd"],
             "status": "succeeded",
             "provider": "mock",
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
     )
-    return {"status": "succeeded", "payment_id": payment_id, "amount": 49}
+    return {"status": "succeeded", "payment_id": payment_id, "amount": pricing["amount_usd"], "tier": tier}
 
 
 @api_router.post("/subscribe")
