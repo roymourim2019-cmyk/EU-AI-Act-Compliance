@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { QUESTIONS, DPDP_QUESTIONS } from "@/lib/quiz-data";
@@ -15,8 +15,11 @@ export default function QuizPage() {
   const [dpdp, setDpdp] = useState(false);
   const [dpdpAnswers, setDpdpAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const firedStart = useRef(false);
 
   useEffect(() => {
+    if (firedStart.current) return;
+    firedStart.current = true;
     track("quiz_started", { total_questions: QUESTIONS.length });
   }, []);
 

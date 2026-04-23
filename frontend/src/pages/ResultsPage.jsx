@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -14,11 +14,15 @@ export default function ResultsPage() {
   const navigate = useNavigate();
   const [result, setResult] = useState(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const fired = useRef(false);
 
   useEffect(() => {
     api.get(`/quiz/result/${sessionId}`).then(({ data }) => {
       setResult(data);
-      track("results_viewed", { risk_level: data.risk_level, score: data.score });
+      if (!fired.current) {
+        fired.current = true;
+        track("results_viewed", { risk_level: data.risk_level, score: data.score });
+      }
     }).catch(() => {
       toast.error("Couldn't load your results.");
       navigate("/");

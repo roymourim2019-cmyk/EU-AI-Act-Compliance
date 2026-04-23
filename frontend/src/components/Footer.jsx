@@ -36,8 +36,11 @@ export default function Footer() {
     e.preventDefault();
     const id = retrieveId.trim();
     if (!id) return;
-    // session_id is a UUID v4 — route to results page; report page redirects
-    // back to results if unpaid.
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRe.test(id)) {
+      toast.error("That doesn't look like a valid session ID.");
+      return;
+    }
     navigate(`/results/${id}`);
   };
 

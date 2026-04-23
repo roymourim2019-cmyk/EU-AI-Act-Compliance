@@ -26,21 +26,15 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23)
-- ✅ Landing page with 7 sections (Hero + marquee, Features grid, HowItWorks, Testimonials, Pricing, FAQ, Footer)
-- ✅ 10-question interactive quiz with progress bar, back/next, answer grid
-- ✅ India DPDP toggle adds 4 extra questions
-- ✅ Results page: color-coded badge, 0-100 score, teaser obligations (blurred locked items), share button, unlock CTA
-- ✅ Mock checkout modal ($49) — Razorpay-ready structure
-- ✅ Paid report page: full obligations, deadlines, penalty, FRIA template (high-risk only), compliance badge SVG + embed code + copy
-- ✅ Branded PDF download (jsPDF)
-- ✅ FRIA CSV download
-- ✅ Newsletter subscription form
-- ✅ Aug 2026 countdown (live, updates each second)
-- ✅ Dark/light theme toggle
-- ✅ SEO meta title + description set
-- ✅ Backend test suite: 17/17 passing, covers all 6 classification tiers + payment gating
-- ✅ Frontend E2E tested: all flows green
+## Implemented (2026-02-23 · iter 2)
+- ✅ All iter 1 features (landing, quiz, DPDP toggle, results, mock checkout, paid report with FRIA + badge + PDF + CSV)
+- ✅ Rate limiting: 10/min on `/api/quiz/submit`, 5/min on `/api/subscribe` via slowapi; custom X-Forwarded-For key function for k8s ingress
+- ✅ CORS locked to preview URL + localhost:3000 (env-driven)
+- ✅ PostHog events wired: `quiz_started`, `quiz_completed`, `results_viewed`, `unlock_clicked`, `share_clicked`, `checkout_completed`, `pdf_downloaded`, `newsletter_subscribed` — all dedup'd via useRef to avoid StrictMode double-fire
+- ✅ "Bookmark this result" box on Results page with copy-to-clipboard
+- ✅ "Retrieve report" UUID-validated form in Footer (jumps to `/results/:id`)
+- ✅ 21/21 backend pytest passing (including rate-limit + CORS tests)
+- ✅ Frontend E2E re-tested: all PostHog events captured, retrieve-form works
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret
