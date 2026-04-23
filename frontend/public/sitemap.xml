@@ -31,6 +31,26 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://compliance-compass-10.preview.emergentagent.com/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://compliance-compass-10.preview.emergentagent.com/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://compliance-compass-10.preview.emergentagent.com/refund</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://compliance-compass-10.preview.emergentagent.com/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://compliance-compass-10.preview.emergentagent.com/recover</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>

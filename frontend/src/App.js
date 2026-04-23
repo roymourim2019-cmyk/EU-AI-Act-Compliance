@@ -13,6 +13,10 @@ import UpdatesPage from "@/pages/UpdatesPage";
 import TrustPage from "@/pages/TrustPage";
 import ChangelogPage from "@/pages/ChangelogPage";
 import PartnersPage from "@/pages/PartnersPage";
+import PrivacyPage from "@/pages/PrivacyPage";
+import RefundPage from "@/pages/RefundPage";
+import TermsPage from "@/pages/TermsPage";
+import ContactPage from "@/pages/ContactPage";
 
 function App() {
   return (
@@ -29,6 +33,10 @@ function App() {
           <Route path="/trust" element={<TrustPage />} />
           <Route path="/changelog" element={<ChangelogPage />} />
           <Route path="/partners" element={<PartnersPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/refund" element={<RefundPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
         </Routes>
         <Toaster position="bottom-right" />
       </BrowserRouter>

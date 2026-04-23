@@ -118,13 +118,15 @@ export default function Footer() {
           <div data-testid="footer-copyright">
             © 2026 Roy&rsquo;s Enterprise · EU AI Act Compliance · All rights reserved
           </div>
-          <div className="flex flex-wrap gap-5 md:gap-6">
+          <div className="flex flex-wrap gap-4 md:gap-5">
             <Link to="/updates" className="hover:text-background sharp-link" data-testid="footer-updates">Updates</Link>
             <Link to="/changelog" className="hover:text-background sharp-link" data-testid="footer-changelog">Changelog</Link>
             <Link to="/trust" className="hover:text-background sharp-link" data-testid="footer-trust">Trust</Link>
             <Link to="/partners" className="hover:text-background sharp-link" data-testid="footer-partners">Partners</Link>
-            <span>Reg (EU) 2024/1689</span>
-            <span>DPDP 2023</span>
+            <Link to="/privacy" className="hover:text-background sharp-link" data-testid="footer-privacy">Privacy</Link>
+            <Link to="/terms" className="hover:text-background sharp-link" data-testid="footer-terms">Terms</Link>
+            <Link to="/refund" className="hover:text-background sharp-link" data-testid="footer-refund">Refunds</Link>
+            <Link to="/contact" className="hover:text-background sharp-link" data-testid="footer-contact">Contact</Link>
           </div>
         </div>
       </div>

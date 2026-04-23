@@ -189,6 +189,13 @@ class PartnerApplication(BaseModel):
     notes: str = Field("", max_length=2000)
 
 
+class ContactMessage(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+    email: EmailStr
+    topic: str = Field("General", max_length=60)
+    message: str = Field(..., min_length=5, max_length=4000)
+
+
 # ---------- EU AI Act scoring logic ----------
 # 10 questions, ordered. Each can trigger a category.
 QUESTIONS_SCHEMA = {
@@ -777,6 +784,25 @@ async def partners_apply(request: Request, app_req: PartnerApplication):
         upsert=True,
     )
     return {"status": "received", "application_id": doc["application_id"]}
+
+
+@api_router.post("/contact")
+@limiter.limit("5/minute")
+async def contact_submit(request: Request, msg: ContactMessage):
+    """Persist a contact-form message. Simple time-series insert (no upsert)
+    so we can see multiple follow-ups from the same address."""
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "message_id": str(uuid.uuid4()),
+        "name": msg.name,
+        "email": msg.email,
+        "topic": msg.topic,
+        "message": msg.message,
+        "submitted_at": now,
+        "status": "received",
+    }
+    await db.contact_messages.insert_one(doc)
+    return {"status": "received", "message_id": doc["message_id"]}
 
 
 @api_router.post("/reports/recover")
