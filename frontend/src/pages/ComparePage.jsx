@@ -10,7 +10,10 @@ import { toast } from "sonner";
 export default function ComparePage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const ids = useMemo(() => (params.get("ids") || "").split(",").filter(Boolean).slice(0, 3), [params]);
+  const ids = useMemo(() => {
+    const raw = (params.get("ids") || "").split(",").map((s) => s.trim()).filter(Boolean);
+    return Array.from(new Set(raw)).slice(0, 3);
+  }, [params]);
   const [reports, setReports] = useState(null);
 
   useEffect(() => {
@@ -148,7 +151,7 @@ export default function ComparePage() {
             >
               {allObligations.map((ob) => {
                 // count how many reports have this obligation
-                const count = reports.filter((r) => r.obligations.includes(ob)).length;
+                const count = reports.filter((r) => (r.obligations || []).includes(ob)).length;
                 const unique = count === 1;
                 return (
                   <React.Fragment key={ob}>
@@ -159,7 +162,7 @@ export default function ComparePage() {
                       )}
                     </div>
                     {reports.map((r) => {
-                      const has = r.obligations.includes(ob);
+                      const has = (r.obligations || []).includes(ob);
                       return (
                         <div
                           key={r.session_id + ob}

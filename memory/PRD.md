@@ -26,14 +26,13 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 3)
-- ✅ All iter 1–2 features (landing, quiz, DPDP, results, mock $49 checkout, paid report, PDF, FRIA, compliance badge, PostHog events, rate limiting, retrieve by session ID, bookmark box)
-- ✅ **Self-service report recovery**: `POST /api/reports/recover` — returns up to 5 most-recent PAID sessions for a buyer email, sorted by paid_at desc. Unpaid sessions excluded (no free-user enumeration). Rate-limited 3/min.
-- ✅ `/recover` page with form, rich card list of paid reports (color-coded badges, score, paid date), click-to-open, empty state with "Start new scorecard" CTA, "Why not just log in?" explainer.
-- ✅ Footer link "Lost your link? Recover by email →" → /recover
-- ✅ Quiz submit rate limit bumped 10/min → **20/min**
-- ✅ 28/28 backend pytest passing (added test_recover.py + updated test_rate_limits.py)
-- ✅ `/app/DEPLOYMENT_CORS.md` — copy-paste ingress CORS configs for 5 prod hosts
+## Implemented (2026-02-23 · iter 4)
+- ✅ All iter 1–3 features
+- ✅ **Compare my reports**: On `/recover`, each paid-report card has a checkbox. Select 2–3 and a sticky bottom bar surfaces a "Compare reports" CTA.
+- ✅ `/compare?ids=a,b,c` page: fetches all paid reports in parallel via `GET /api/report/:id`, renders side-by-side columns (risk badge, score, references, penalty), plus an **Obligations Matrix** that highlights items **UNIQUE** to a single report (yellow tag).
+- ✅ Defensive guards: deduplicates `ids` query param, graceful fallback when `obligations` missing.
+- ✅ Edge cases: <2 ids redirects to `/recover`, unpaid ids redirect with toast (402 on `/api/report`).
+- ✅ All 12 frontend test scenarios pass; backend unchanged.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret
