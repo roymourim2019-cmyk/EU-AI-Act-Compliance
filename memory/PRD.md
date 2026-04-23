@@ -26,13 +26,11 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 4)
-- ✅ All iter 1–3 features
-- ✅ **Compare my reports**: On `/recover`, each paid-report card has a checkbox. Select 2–3 and a sticky bottom bar surfaces a "Compare reports" CTA.
-- ✅ `/compare?ids=a,b,c` page: fetches all paid reports in parallel via `GET /api/report/:id`, renders side-by-side columns (risk badge, score, references, penalty), plus an **Obligations Matrix** that highlights items **UNIQUE** to a single report (yellow tag).
-- ✅ Defensive guards: deduplicates `ids` query param, graceful fallback when `obligations` missing.
-- ✅ Edge cases: <2 ids redirects to `/recover`, unpaid ids redirect with toast (402 on `/api/report`).
-- ✅ All 12 frontend test scenarios pass; backend unchanged.
+## Implemented (2026-02-23 · iter 5)
+- ✅ All iter 1–4 features
+- ✅ **Export comparison as PDF**: New "Export comparison as PDF" button on `/compare` page generates a landscape-A4 branded PDF using the existing jsPDF pipeline. Cover header, scores row, references, shared penalty, obligations matrix with YES cells filled black + UNIQUE yellow pill on single-system obligations, regulatory timeline, disclaimer. Auto-paginates; filename `EU-AI-Act-Comparison-<sid1>-<sid2>[-<sid3>].pdf`.
+- ✅ PostHog event `comparison_pdf_downloaded` wired.
+- ✅ Playwright verified download fires with correct filename; no lint issues.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret
