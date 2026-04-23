@@ -947,10 +947,16 @@ def generate_badge_svg(risk_level: str) -> str:
 
 app.include_router(api_router)
 
+# CORS: browsers reject `allow_origins=["*"]` when `allow_credentials=True`,
+# so we only enable credentials when a concrete origins list is configured.
+_cors_env = os.environ.get("CORS_ORIGINS", "*").strip()
+_cors_origins = [o.strip() for o in _cors_env.split(",") if o.strip()] or ["*"]
+_allow_credentials = _cors_origins != ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
+    allow_credentials=_allow_credentials,
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
