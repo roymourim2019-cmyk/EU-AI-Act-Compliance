@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ArrowLeft, Megaphone, Mail, CheckCircle2 } from "lucide-react";
 import useSeo from "@/lib/useSeo";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 const BENEFITS = [
   {
@@ -27,6 +29,7 @@ const BENEFITS = [
 export default function PartnersPage() {
   const [form, setForm] = useState({ name: "", newsletter: "", email: "", audience: "", notes: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useSeo({
     title: "Partners · Legal & compliance newsletters · Roy's Enterprise",
@@ -35,22 +38,24 @@ export default function PartnersPage() {
     canonical: typeof window !== "undefined" ? window.location.origin + "/partners" : "",
   });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // No backend persistence yet — construct a mailto so applications reach us
-    // and we can triage manually during the early partner program.
-    const subject = `Partner program · ${form.newsletter || form.name}`;
-    const body = [
-      `Name: ${form.name}`,
-      `Newsletter / outlet: ${form.newsletter}`,
-      `Contact email: ${form.email}`,
-      `Audience size: ${form.audience}`,
-      "",
-      "Notes:",
-      form.notes,
-    ].join("\n");
-    window.location.href = `mailto:partners@aiact-scorecard.eu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSubmitted(true);
+    setSubmitting(true);
+    try {
+      await api.post("/partners/apply", form);
+      toast.success("Application received. We'll reply within 2 business days.");
+      setSubmitted(true);
+    } catch (err) {
+      if (err?.response?.status === 429) {
+        toast.error("Too many attempts. Try again in a minute.");
+      } else if (err?.response?.status === 422) {
+        toast.error("Please check your email and required fields.");
+      } else {
+        toast.error("Couldn't send right now. Email partners@aiact-scorecard.eu directly.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -102,9 +107,10 @@ export default function PartnersPage() {
               <div className="border border-[#16A34A] p-6 flex items-start gap-3" data-testid="partner-submitted">
                 <CheckCircle2 className="h-5 w-5 mt-0.5 text-[#16A34A] shrink-0" />
                 <div>
-                  <div className="font-display text-xl tracking-tight">Application opened in your mail client.</div>
+                  <div className="font-display text-xl tracking-tight">Application received.</div>
                   <p className="text-foreground/70 mt-1 text-sm">
-                    If nothing happened, email <a href="mailto:partners@aiact-scorecard.eu" className="sharp-link">partners@aiact-scorecard.eu</a> directly. We reply within 2 business days.
+                    We've logged your submission and will reply within 2 business days. Questions in the meantime?
+                    Email <a href="mailto:partners@aiact-scorecard.eu" className="sharp-link">partners@aiact-scorecard.eu</a>.
                   </p>
                 </div>
               </div>
@@ -142,10 +148,11 @@ export default function PartnersPage() {
                 </label>
                 <button
                   type="submit"
-                  className="w-full h-14 bg-foreground text-background label-eyebrow hover:bg-[#0020C2] hover:text-white transition-all inline-flex items-center justify-center gap-2"
+                  disabled={submitting}
+                  className="w-full h-14 bg-foreground text-background label-eyebrow hover:bg-[#0020C2] hover:text-white transition-all inline-flex items-center justify-center gap-2 disabled:opacity-50"
                   data-testid="partner-submit-btn"
                 >
-                  <Mail className="h-4 w-4" /> Send application
+                  <Mail className="h-4 w-4" /> {submitting ? "Sending…" : "Send application"}
                 </button>
               </form>
             )}

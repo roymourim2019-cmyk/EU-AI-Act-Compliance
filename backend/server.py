@@ -152,6 +152,14 @@ class RecoverRequest(BaseModel):
     email: EmailStr
 
 
+class PartnerApplication(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+    newsletter: str = Field(..., min_length=1, max_length=200)
+    email: EmailStr
+    audience: str = Field("", max_length=120)
+    notes: str = Field("", max_length=2000)
+
+
 # ---------- EU AI Act scoring logic ----------
 # 10 questions, ordered. Each can trigger a category.
 QUESTIONS_SCHEMA = {
@@ -568,6 +576,32 @@ async def subscribe(request: Request, req: SubscribeRequest):
         upsert=True,
     )
     return {"status": "subscribed"}
+
+
+@api_router.post("/partners/apply")
+@limiter.limit("3/minute")
+async def partners_apply(request: Request, app_req: PartnerApplication):
+    """Persist a partner-program application for the early newsletter
+    distribution cohort. De-duplicated by (email, newsletter) so accidental
+    resubmits update rather than flood the queue.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "application_id": str(uuid.uuid4()),
+        "name": app_req.name,
+        "newsletter": app_req.newsletter,
+        "email": app_req.email,
+        "audience": app_req.audience,
+        "notes": app_req.notes,
+        "submitted_at": now,
+        "status": "received",
+    }
+    await db.partner_applications.update_one(
+        {"email": app_req.email, "newsletter": app_req.newsletter},
+        {"$set": doc, "$setOnInsert": {"first_seen_at": now}},
+        upsert=True,
+    )
+    return {"status": "received", "application_id": doc["application_id"]}
 
 
 @api_router.post("/reports/recover")
