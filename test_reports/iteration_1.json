@@ -1,0 +1,35 @@
+{
+  "summary": "First iteration E2E testing of EU AI Act Compliance Scorecard MVP. Backend: 17/17 pytest tests pass covering root, quiz classification (all 6 tiers incl. out-of-scope), persistence, DPDP findings, 402-gating, mock checkout, full report (FRIA + badge SVG), subscribe (valid + invalid). Frontend: Landing renders with Hero/HowItWorks/Testimonials/Pricing/FAQ/Footer, theme toggle flips html class light<->dark, 10-question quiz works, DPDP toggle adds 4 extra questions (counter 10 -> 14), high-risk path navigates to /results/:id with risk-badge=High-Risk & score=30, unlock opens MockCheckoutModal, pay succeeds, /report/:id shows paid banner, obligations checklist, DPDP findings, FRIA CSV download, branded PDF download (EU-AI-Act-Report-<id>.pdf), compliance badge SVG, and copy-badge-btn visible under embed tab. Newsletter subscribe posts /api/subscribe -> 200.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global", "issues": ["Page <title> is the default 'Emergent | Fullstack App' in /app/frontend/public/index.html instead of a product-relevant title (e.g., 'EU AI Act Scorecard')."]},
+      {"screen": "MockCheckoutModal", "issues": ["Console a11y warning: 'Missing Description or aria-describedby for DialogContent'. Add <DialogDescription> or aria-describedby to the Radix DialogContent for WCAG compliance."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_backend.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "(Low) Update public/index.html <title> to product-specific title.",
+    "(Low) Add DialogDescription/aria-describedby to MockCheckoutModal DialogContent to silence Radix a11y warning.",
+    "(Optional) Also add a top-level `start-quiz-button` testid if referenced by any analytics spec; currently only `hero-start-quiz-btn` exists, which fulfills the primary CTA requirement."
+  ],
+  "critical_code_review_comments": [
+    "server.py uses deprecated @app.on_event('shutdown'). Migrate to FastAPI lifespan context.",
+    "generate_badge_svg label for 'minimal' is 'AI ACT — MINIMAL RISK' but out-of-scope case also returns risk_level='minimal'; consider distinguishing scope vs minimal in the badge text for clarity.",
+    "classify_and_score: out-of-scope short-circuit (q9=no) returns risk_level='minimal' which conflicts with semantic 'out of scope'. risk_label reads 'Out of EU Scope / Minimal' but downstream obligations map uses 'minimal' key. Acceptable for MVP but worth a dedicated risk_level='out_of_scope' later.",
+    "CORS allow_origins='*' with allow_credentials=True is invalid per CORS spec (browsers reject). Configure explicit origins in production.",
+    "No rate limiting on /api/subscribe or /api/quiz/submit — easy abuse vector before launch."
+  ],
+  "updated_files": ["/app/backend/tests/test_backend.py", "/app/backend/tests/__init__.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "None required (public app). Mock card 4242 4242 4242 4242 shown inside modal.",
+  "seed_data_creation": "Test data inserted via API calls (TEST_* prefixed emails + quiz sessions). No manual seeds.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Regression test file at /app/backend/tests/test_backend.py covers all endpoints + all 6 classification tiers + payment gating. For FE, use data-testid: hero-start-quiz-btn, quiz-option-yes/no, quiz-next-btn, quiz-submit-btn, dpdp-toggle, unlock-report-btn, checkout-pay-btn, badge-tab-embed, copy-badge-btn, download-pdf-btn, download-fria-btn, subscribe-form/input/btn, theme-toggle, testimonials-section. Note: copy-badge-btn only renders under the 'embed' tab of the compliance badge section. High-risk path requires q3=yes, q9=yes. Out-of-scope is q9=no."
+}
