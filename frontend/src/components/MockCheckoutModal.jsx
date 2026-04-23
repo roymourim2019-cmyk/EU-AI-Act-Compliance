@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -39,6 +40,9 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess 
             <DialogTitle className="font-display text-2xl tracking-tight flex items-center gap-2">
               <Lock className="h-4 w-4" /> Unlock full report
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Complete mock checkout to unlock your full EU AI Act compliance report.
+            </DialogDescription>
           </DialogHeader>
           <p className="label-eyebrow text-foreground/60 mt-2">
             Mock checkout · Razorpay-ready · no real charge
