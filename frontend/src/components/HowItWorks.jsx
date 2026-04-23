@@ -1,4 +1,5 @@
 import React from "react";
+import { PRICING } from "@/lib/pricing";
 
 const STEPS = [
   {
@@ -14,7 +15,7 @@ const STEPS = [
   {
     n: "03",
     title: "Unlock the full report",
-    body: "Pick a tier from $79. Obligations checklist, FRIA starter, deadlines, penalty exposure, supplier questionnaire, and an embed badge.",
+    body: `Pick a tier from $${PRICING.starter.amount_usd}. Obligations checklist, FRIA starter, deadlines, penalty exposure, supplier questionnaire, and an embed badge.`,
   },
 ];
 

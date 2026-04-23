@@ -26,16 +26,15 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 10 — Premium pricing, no Free tier, no Emergent branding)
-- ✅ **Prices raised to premium band**: Starter **$79** · Pro **$199** (Most popular) · Bundle **$399** (5 systems, effective $79.80/system).
-- ✅ **Free tier removed entirely** from the Pricing section — 3 paid tiers only. Results page paywall unchanged (quiz still free to take, all artifacts require payment).
-- ✅ **Pricing positioning rewritten**: "Big-four audit firms quote $8,000–$25,000…" anchors the premium/value-for-money story.
-- ✅ Pro tier now includes "Priority regulatory updates". Bundle tier adds "White-label branded PDFs".
-- ✅ **Emergent branding removed**: `#emergent-badge` hidden via inline `display:none` in `index.html` + global CSS safety net (`#emergent-badge, [id^="emergent-"], [class*="emergent-badge"] { display: none !important; }`). Verified: no "Made with Emergent" text in DOM, badge not visible.
-- ✅ All price references updated: MockCheckoutModal, Hero CTA, ExitIntentModal, ResultsPage tier-ladder, Landing JSON-LD offers, FAQ tier comparison, Testimonials quote, HowItWorks copy.
-- ✅ New FAQ: "How does this compare to a law-firm audit?" replaces the stale "Free tier" Q&A.
-- ✅ Hero stale copy fix: "No signup required to see your risk classification".
-- ✅ **41/41 backend pytest + ~25/25 frontend assertions pass**. Zero issues.
+## Implemented (2026-02-23 · iter 11 — Pricing single-source-of-truth refactor)
+- ✅ All iter 1–10 features
+- ✅ Backend `TIER_METADATA` map (labels, amounts, features, tagline, credits, popularity, order) — **the single source of truth**. Legacy `TIER_PRICING` now derived from it.
+- ✅ New public endpoint `GET /api/pricing` returns sorted tier list + currency + `effective_at`. No auth, no rate limit.
+- ✅ Frontend `/app/frontend/src/lib/pricing.js` — static `PRICING` defaults (for SEO/first-render) + `usePricing()` hook that hydrates from `/api/pricing` with a module-level cache. `tiersAsList()` and `priceLabel()` helpers exported.
+- ✅ Refactored all 7 consumer files to read from the shared source: `Pricing.jsx`, `MockCheckoutModal.jsx`, `Hero.jsx`, `ExitIntentModal.jsx`, `ResultsPage.jsx` (tier-ladder + SEO description), `Landing.jsx` (JSON-LD offers + useSeo), `FAQ.jsx`, `ReportPage.jsx` (upgrade hint), `HowItWorks.jsx` (step copy), `Testimonials.jsx` (testimonial quote).
+- ✅ Hardened `/api/checkout/mock`: unknown tier now returns **HTTP 400** with `detail: "Unknown tier 'X'. Valid: [...]"` instead of silent coercion.
+- ✅ **49/49 backend pytest + 100% frontend assertions** pass (new `test_pricing.py` added with 8 cases).
+- ✅ Changing a price is now a one-line edit in `server.py` `TIER_METADATA` — propagates to Pricing cards, checkout modal, tier-ladder, JSON-LD, FAQ, testimonials, and upgrade hint on next page load.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret

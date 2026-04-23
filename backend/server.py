@@ -373,7 +373,9 @@ async def mock_checkout(req: CheckoutRequest):
     doc = await db.quiz_sessions.find_one({"session_id": req.session_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Session not found")
-    tier = req.tier if req.tier in TIER_PRICING else "pro"
+    if req.tier not in TIER_PRICING:
+        raise HTTPException(status_code=400, detail=f"Unknown tier '{req.tier}'. Valid: {list(TIER_PRICING.keys())}")
+    tier = req.tier
     pricing = TIER_PRICING[tier]
     payment_id = f"mock_pay_{uuid.uuid4().hex[:12]}"
     await db.quiz_sessions.update_one(

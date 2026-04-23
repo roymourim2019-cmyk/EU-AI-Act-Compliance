@@ -42,7 +42,7 @@ export default function ResultsPage() {
       ? `Your EU AI Act risk: ${meta.label} (${result.score}/100)`
       : "Your EU AI Act scorecard",
     description: result
-      ? `Your AI system classified as ${meta.label} under the EU AI Act 2026. Unlock the full report with obligations, FRIA, supplier questionnaire, and deadlines from $79.`
+      ? `Your AI system classified as ${meta.label} under the EU AI Act 2026. Unlock the full report with obligations, FRIA, supplier questionnaire, and deadlines from $${pricing.starter.amount_usd}.`
       : "Your EU AI Act compliance scorecard results.",
     canonical: typeof window !== "undefined" ? window.location.href : "",
   });
