@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Countdown from "@/components/Countdown";
 import TrustCounter from "@/components/TrustCounter";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
+import { PRICING } from "@/lib/pricing";
 
 export default function Hero() {
   return (
@@ -56,7 +57,7 @@ export default function Hero() {
               className="inline-flex items-center gap-2 h-14 px-7 border border-foreground/30 hover:bg-foreground hover:text-background transition-all duration-200 label-eyebrow"
               data-testid="hero-see-pricing"
             >
-              Unlock full report · from $79
+              Unlock full report · from ${PRICING.starter.amount_usd}
             </a>
           </div>
 

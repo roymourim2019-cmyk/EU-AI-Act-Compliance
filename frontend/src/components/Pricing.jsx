@@ -1,73 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Check, Sparkles, Layers } from "lucide-react";
+import { usePricing, tiersAsList, priceLabel } from "@/lib/pricing";
 
-const TIERS = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: "$79",
-    priceNote: "one-time · 1 system",
-    tagline: "Everything your first AI audit needs.",
-    features: [
-      "Full 0–100 risk score",
-      "Obligations checklist (all tiers)",
-      "Regulatory deadline tracker",
-      "Penalty exposure summary",
-      "Branded PDF download",
-      "Shareable report link",
-    ],
-    cta: { label: "Start quiz · unlock $79", to: "/quiz?tier=starter" },
-    icon: null,
-    accent: "starter",
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$199",
-    priceNote: "one-time · 1 system",
-    tagline: "What your legal team actually needs.",
-    features: [
-      "Everything in Starter",
-      "FRIA starter template (Art 27)",
-      "Compliance badge (SVG + embed)",
-      "Supplier questionnaire (CSV, 22 Q)",
-      "Invite-your-GC email flow",
-      "India DPDP findings",
-      "Priority regulatory updates",
-    ],
-    cta: { label: "Start quiz · unlock $199", to: "/quiz?tier=pro" },
-    icon: Sparkles,
-    accent: "pro",
-    popular: true,
-  },
-  {
-    id: "bundle",
-    name: "Bundle",
-    price: "$399",
-    priceNote: "one-time · 5 systems",
-    tagline: "Audit the full AI portfolio once.",
-    features: [
-      "Everything in Pro × 5 reports",
-      "Portfolio comparison view",
-      "Comparison PDF export",
-      "White-label branded PDFs",
-      "Lifetime access across all 5",
-      "Effective price: $79.80 per system",
-    ],
-    cta: { label: "Start quiz · unlock $399", to: "/quiz?tier=bundle" },
-    icon: Layers,
-    accent: "bundle",
-  },
-];
+const ACCENT_ICON = { pro: Sparkles, bundle: Layers };
 
 export default function Pricing() {
+  const pricing = usePricing();
+  const tiers = tiersAsList(pricing);
+
   const pickTier = (id) => {
-    try {
-      sessionStorage.setItem("preferred_tier", id);
-    } catch (e) {
-      // ignore
-    }
+    try { sessionStorage.setItem("preferred_tier", id); } catch (e) { /* ignore */ }
   };
 
   return (
@@ -103,9 +46,9 @@ export default function Pricing() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 border-t border-l border-foreground/15">
-          {TIERS.map((t) => {
+          {tiers.map((t) => {
             const isPopular = !!t.popular;
-            const Icon = t.icon;
+            const Icon = ACCENT_ICON[t.id];
             const cardCls = isPopular
               ? "bg-foreground text-background"
               : "bg-background text-foreground";
@@ -131,14 +74,14 @@ export default function Pricing() {
                 <div className="flex items-center justify-between mb-6">
                   <div className={`label-eyebrow flex items-center gap-2 ${borderText}`}>
                     {Icon && <Icon className="h-3.5 w-3.5" />}
-                    {t.name}
+                    {t.label}
                   </div>
                   <span className={`label-eyebrow ${isPopular ? "text-background/40" : "text-foreground/40"}`}>
-                    {t.priceNote}
+                    {t.price_note}
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2 mb-5">
-                  <span className="font-display text-6xl tracking-tighter">{t.price}</span>
+                  <span className="font-display text-6xl tracking-tighter">{priceLabel(t.id)}</span>
                 </div>
                 <p className={`mb-6 text-sm ${mutedText}`}>{t.tagline}</p>
                 <ul className="space-y-2 mb-8">
@@ -150,12 +93,12 @@ export default function Pricing() {
                   ))}
                 </ul>
                 <Link
-                  to={t.cta.to}
+                  to={`/quiz?tier=${t.id}`}
                   onClick={() => pickTier(t.id)}
                   className={`mt-auto inline-flex items-center justify-center w-full h-12 label-eyebrow transition-all duration-200 ${ctaCls}`}
                   data-testid={`pricing-${t.id}-cta`}
                 >
-                  {t.cta.label}
+                  {`Start quiz · unlock ${priceLabel(t.id)}`}
                 </Link>
               </div>
             );
@@ -169,5 +112,3 @@ export default function Pricing() {
     </section>
   );
 }
-
-export const PRICING_TIERS = TIERS;

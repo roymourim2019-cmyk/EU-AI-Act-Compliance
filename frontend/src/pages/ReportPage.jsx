@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import InviteCounselButton from "@/components/InviteCounselButton";
 import { PROCUREMENT_QUESTIONS } from "@/lib/procurement";
+import { PRICING } from "@/lib/pricing";
 
 export default function ReportPage() {
   const { sessionId } = useParams();
@@ -261,7 +262,7 @@ export default function ReportPage() {
               {report.tier === "starter" && (
                 <div className="border-t border-foreground/15 pt-3 mt-2" data-testid="tier-upgrade-hint">
                   <p className="text-xs text-foreground/60 leading-relaxed mb-2">
-                    FRIA starter, supplier questionnaire, compliance badge, and GC-invite email are available on Pro ($199) and Bundle ($399).
+                    {`FRIA starter, supplier questionnaire, compliance badge, and GC-invite email are available on Pro ($${PRICING.pro.amount_usd}) and Bundle ($${PRICING.bundle.amount_usd}).`}
                   </p>
                   <a
                     href="#pricing"

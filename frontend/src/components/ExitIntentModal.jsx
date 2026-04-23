@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Lock, FileText, Building2, GitCompare, BadgeCheck, ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
+import { PRICING } from "@/lib/pricing";
 
 const STORAGE_KEY = "eu_ai_act_exit_intent_shown";
 
@@ -60,9 +61,11 @@ export default function ExitIntentModal({ onUpgrade, enabled = true }) {
             className="mt-4 w-full inline-flex items-center justify-center gap-2 h-12 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
             data-testid="exit-intent-cta"
           >
-            Pick a tier · from $79 <ArrowRight className="h-4 w-4" />
+            Pick a tier · from ${PRICING.starter.amount_usd} <ArrowRight className="h-4 w-4" />
           </button>
-          <p className="label-eyebrow text-foreground/50 text-center">Early-access · Starter $79 · Pro $199 · Bundle $399</p>
+          <p className="label-eyebrow text-foreground/50 text-center">
+            Early-access · Starter ${PRICING.starter.amount_usd} · Pro ${PRICING.pro.amount_usd} · Bundle ${PRICING.bundle.amount_usd}
+          </p>
         </div>
       </DialogContent>
     </Dialog>

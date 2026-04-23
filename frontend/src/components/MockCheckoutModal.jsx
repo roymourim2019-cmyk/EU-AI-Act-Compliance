@@ -9,31 +9,12 @@ import {
 import { api } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import { toast } from "sonner";
-import { Lock, Check, Crown, Layers } from "lucide-react";
-
-const TIERS = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: 79,
-    tagline: "Single system · essentials",
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: 199,
-    tagline: "Single system · everything legal needs",
-    popular: true,
-  },
-  {
-    id: "bundle",
-    name: "Bundle",
-    price: 399,
-    tagline: "5 systems · portfolio view",
-  },
-];
+import { Lock, Check } from "lucide-react";
+import { usePricing, tiersAsList } from "@/lib/pricing";
 
 export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess, initialTier }) {
+  const pricing = usePricing();
+  const tiers = tiersAsList(pricing);
   const [email, setEmail] = useState("");
   const [processing, setProcessing] = useState(false);
   const [tier, setTier] = useState(initialTier || "pro");
@@ -44,10 +25,10 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess,
       initialTier ||
       (typeof window !== "undefined" && sessionStorage.getItem("preferred_tier")) ||
       "pro";
-    setTier(preferred === "free" ? "pro" : preferred);
-  }, [open, initialTier]);
+    setTier(preferred === "free" || !pricing[preferred] ? "pro" : preferred);
+  }, [open, initialTier, pricing]);
 
-  const selected = TIERS.find((t) => t.id === tier) || TIERS[1];
+  const selected = pricing[tier] || pricing.pro;
 
   const pay = async (e) => {
     e.preventDefault();
@@ -60,7 +41,7 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess,
         tier,
       });
       track("checkout_completed", { amount_usd: data.amount, tier: data.tier, payment_id: data.payment_id });
-      toast.success(`Payment succeeded · ${selected.name} · $${data.amount}`);
+      toast.success(`Payment succeeded · ${selected.label} · $${data.amount}`);
       onSuccess?.(data);
     } catch (err) {
       toast.error("Mock payment failed");
@@ -89,9 +70,8 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess,
           </p>
         </div>
         <form onSubmit={pay} className="p-6 space-y-5">
-          {/* Tier picker */}
           <div className="grid grid-cols-3 border border-foreground/15" data-testid="tier-picker">
-            {TIERS.map((t, i) => {
+            {tiers.map((t, i) => {
               const active = tier === t.id;
               return (
                 <button
@@ -99,15 +79,15 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess,
                   key={t.id}
                   onClick={() => setTier(t.id)}
                   className={`relative p-3 text-left ${
-                    i !== TIERS.length - 1 ? "border-r border-foreground/15" : ""
+                    i !== tiers.length - 1 ? "border-r border-foreground/15" : ""
                   } ${active ? "bg-foreground text-background" : "hover:bg-foreground/5"}`}
                   data-testid={`tier-option-${t.id}`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="label-eyebrow text-[10px]">{t.name}</span>
+                    <span className="label-eyebrow text-[10px]">{t.label}</span>
                     {active && <Check className="h-3 w-3" />}
                   </div>
-                  <div className="font-display text-xl tabular-nums">${t.price}</div>
+                  <div className="font-display text-xl tabular-nums">${t.amount_usd}</div>
                   {t.popular && (
                     <span className="absolute top-0 right-0 bg-[#EAB308] text-black label-eyebrow text-[9px] px-1">
                       Popular
@@ -120,10 +100,10 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess,
 
           <div className="border border-foreground/15 p-4 flex items-center justify-between">
             <div>
-              <div className="label-eyebrow text-foreground/60">Selected · {selected.name}</div>
+              <div className="label-eyebrow text-foreground/60">Selected · {selected.label}</div>
               <div className="text-xs text-foreground/70 mt-1">{selected.tagline}</div>
             </div>
-            <span className="font-display text-3xl tracking-tight">${selected.price}.00</span>
+            <span className="font-display text-3xl tracking-tight">${selected.amount_usd}.00</span>
           </div>
 
           <div>
@@ -153,7 +133,7 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess,
             className="w-full h-12 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all disabled:opacity-50"
             data-testid="checkout-pay-btn"
           >
-            {processing ? "Processing…" : `Pay $${selected.price} · ${selected.name} (mock)`}
+            {processing ? "Processing…" : `Pay $${selected.amount_usd} · ${selected.label} (mock)`}
           </button>
           <p className="mono text-[11px] text-foreground/50 text-center">
             Live Razorpay gateway plugs into /api/checkout/mock with no frontend changes

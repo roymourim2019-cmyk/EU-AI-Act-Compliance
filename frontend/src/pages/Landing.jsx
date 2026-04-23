@@ -8,10 +8,11 @@ import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import useSeo from "@/lib/useSeo";
+import { PRICING, tiersAsList } from "@/lib/pricing";
 
 const ORIGIN = typeof window !== "undefined" ? window.location.origin : "";
 
-const JSONLD = {
+const buildJsonLd = () => ({
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -27,11 +28,14 @@ const JSONLD = {
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       url: ORIGIN,
-      offers: [
-        { "@type": "Offer", name: "Starter", price: "79", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
-        { "@type": "Offer", name: "Pro", price: "199", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
-        { "@type": "Offer", name: "Bundle (5 systems)", price: "399", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
-      ],
+      offers: tiersAsList().map((t) => ({
+        "@type": "Offer",
+        name: t.id === "bundle" ? `${t.label} (5 systems)` : t.label,
+        price: String(t.amount_usd),
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        priceValidUntil: "2026-09-01",
+      })),
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue: "4.9",
@@ -42,19 +46,18 @@ const JSONLD = {
       "@type": "FAQPage",
       mainEntity: [
         { "@type": "Question", name: "Is this legal advice?", acceptedAnswer: { "@type": "Answer", text: "No. This is a diagnostic tool mapped to publicly available EU AI Act text." } },
-        { "@type": "Question", name: "Which tier should I pick?", acceptedAnswer: { "@type": "Answer", text: "Starter $79 for the essentials, Pro $199 for legal-ready artifacts, Bundle $399 for 5 systems with portfolio compare." } },
+        { "@type": "Question", name: "Which tier should I pick?", acceptedAnswer: { "@type": "Answer", text: `Starter $${PRICING.starter.amount_usd} for the essentials, Pro $${PRICING.pro.amount_usd} for legal-ready artifacts, Bundle $${PRICING.bundle.amount_usd} for 5 systems with portfolio compare.` } },
         { "@type": "Question", name: "Is this a subscription?", acceptedAnswer: { "@type": "Answer", text: "No. Every tier is a one-time payment with lifetime access." } },
         { "@type": "Question", name: "Which AI Act version?", acceptedAnswer: { "@type": "Answer", text: "Regulation (EU) 2024/1689 with 2025–2027 phased deadlines." } },
       ],
     },
   ],
-};
+});
 
 export default function Landing() {
   useSeo({
-    title: "EU AI Act Compliance — Classify your AI risk in 5 minutes · from $79",
-    description:
-      "Professional EU AI Act 2026 compliance tooling. Risk scorecard, FRIA starter, obligations checklist, supplier questionnaire, portfolio compare. One-time pricing from $79 — audit-grade at a fraction of big-four cost. By Roy's Enterprise.",
+    title: `EU AI Act Compliance — Classify your AI risk in 5 minutes · from $${PRICING.starter.amount_usd}`,
+    description: `Professional EU AI Act 2026 compliance tooling. Risk scorecard, FRIA starter, obligations checklist, supplier questionnaire, portfolio compare. One-time pricing from $${PRICING.starter.amount_usd} — audit-grade at a fraction of big-four cost. By Roy's Enterprise.`,
     canonical: ORIGIN + "/",
     keywords:
       "EU AI Act, EU AI Act 2026, AI Act compliance, FRIA template, Annex III, GPAI, Article 6, Article 27, high-risk AI, AI compliance tool, AI risk assessment, Regulation 2024/1689",
@@ -74,7 +77,7 @@ export default function Landing() {
       <Footer />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildJsonLd()) }}
       />
     </div>
   );

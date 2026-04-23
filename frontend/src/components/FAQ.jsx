@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PRICING } from "@/lib/pricing";
 
 const FAQS = [
   {
@@ -13,7 +14,7 @@ const FAQS = [
   },
   {
     q: "Which tier should I pick?",
-    a: "Starter ($79) is right if you need the score, obligations, deadlines and a branded PDF for a single system. Pro ($199) adds everything your legal team actually needs — FRIA, supplier questionnaire, compliance badge, GC invite. Bundle ($399) covers 5 AI systems with portfolio compare — effective price $79.80 per system.",
+    a: `Starter ($${PRICING.starter.amount_usd}) is right if you need the score, obligations, deadlines and a branded PDF for a single system. Pro ($${PRICING.pro.amount_usd}) adds everything your legal team actually needs — FRIA, supplier questionnaire, compliance badge, GC invite. Bundle ($${PRICING.bundle.amount_usd}) covers 5 AI systems with portfolio compare — effective price $79.80 per system.`,
   },
   {
     q: "Is this a subscription?",
@@ -29,7 +30,7 @@ const FAQS = [
   },
   {
     q: "How does this compare to a law-firm audit?",
-    a: "Big-four and specialist firms quote $8,000–$25,000 for a readiness review that takes 4–6 weeks. Our Pro tier ($199) ships the same obligations mapping + FRIA starter + supplier questionnaire in minutes — you keep the artifact and your GC does the sign-off.",
+    a: `Big-four and specialist firms quote $8,000–$25,000 for a readiness review that takes 4–6 weeks. Our Pro tier ($${PRICING.pro.amount_usd}) ships the same obligations mapping + FRIA starter + supplier questionnaire in minutes — you keep the artifact and your GC does the sign-off.`,
   },
 ];
 

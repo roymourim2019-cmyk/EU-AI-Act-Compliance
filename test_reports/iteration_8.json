@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 11 — verified pricing single-source-of-truth refactor. Backend: /api/pricing returns 3 tiers sorted by order with Starter $79/1cr/6 features/popular=false, Pro $199/1cr/7 features/popular=true, Bundle $399/5cr/6 features/popular=false, currency=USD, effective_at present. Endpoint requires no auth and has no rate-limit (10 rapid calls all 200). TIER_PRICING derived from TIER_METADATA — /api/checkout/mock still returns amount 79/199/399 for starter/pro/bundle and falls back to pro ($199) for invalid tier. All 49 pytest tests pass (41 pre-existing + 8 new in test_pricing.py). Frontend: Pricing cards pricing-{starter,pro,bundle}-card show $79/$199/$399; CTAs read 'Start quiz · unlock $79/$199/$399' sourced via usePricing(). Hero 'Unlock full report · from $79' present. ResultsPage unpaid tier-ladder shows $79/$199/$399 with Pro marked Popular and 'Pick a tier · from $79' CTA. MockCheckoutModal tier-picker shows $79/$199/$399 (no $29/$149 legacy); selecting each tier updates checkout-pay-btn label to 'Pay $79/$199/$399 · <Tier> (mock)'. Landing JSON-LD @graph.WebApplication.offers array contains exactly prices ['79','199','399']. FAQ 'Which tier should I pick?' answer contains all three prices. Grep of frontend/src excluding pricing.js shows only acceptable residual hardcodes (HowItWorks copy '$79', Testimonials quote '$199', ResultsPage meta description fallback '$79') — all narrative copy, not numeric sources of truth.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_pricing.py",
+    "/app/backend/tests/test_tiers.py",
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_rate_limits.py",
+    "/app/backend/tests/test_recover.py",
+    "/app/backend/tests/test_stats.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Minor, non-blocking) HowItWorks.jsx line 17 still hardcodes 'from $79', Testimonials.jsx line 20 quote '$199', and ResultsPage.jsx line 45 meta description 'from $79'. These are narrative copy; if the refactor's goal is to make price changes happen in ONE place, these three strings should also use PRICING.starter.amount_usd / PRICING.pro.amount_usd. Not a functional bug, just completeness of the refactor.",
+    "(Carry-over) /api/checkout/mock still silently coerces unknown tier → 'pro' ($199). Consider 400 response to surface client bugs.",
+    "(Carry-over) Consider hiding the tier-ladder entirely on PAID ResultsPage."
+  ],
+  "critical_code_review_comments": [
+    "Refactor is well-executed: PRICING constant + usePricing() hook with module-level cache is idiomatic and avoids a refetch-per-component pattern. The dual default-constant + API-hydration strategy correctly supports SEO/first-render while letting backend be the runtime source of truth.",
+    "pricing.js: _cache is module-scoped which means a page reload is needed to pick up new prices — acceptable given stateless pricing, but worth noting that in-session backend price updates won't surface until reload.",
+    "Residual hardcoded prices in HowItWorks.jsx, Testimonials.jsx, ResultsPage.jsx meta description dilute the 'single source of truth' promise. Low-effort fix: import PRICING and use template literals.",
+    "Bundle feature bullet 'Effective price: $79.80 per system' is a computed derivative of 399/5 — currently hardcoded in TIER_METADATA features array. If Bundle price ever changes this string silently drifts. Consider computing in features[] at runtime, or accept as documented technical-debt."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_pricing.py (new)"
+  ],
+  "success_rate": {"backend": "100% (49/49 pytest)", "frontend": "100% on all 22 assertions (pricing cards, CTA labels, JSON-LD offers, tier-ladder, modal tier-picker, pay-button-updates-per-tier, FAQ copy, Hero CTA)"},
+  "test_credentials": "None required.",
+  "seed_data_creation": "~5 high-risk TEST_-prefixed quiz sessions created via /api/quiz/submit during pytest + 2 sessions during UI test (for results/modal walkthrough).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Pricing is now single-sourced: backend TIER_METADATA in server.py (77-133) → /api/pricing endpoint → frontend /lib/pricing.js PRICING constant + usePricing() hook. To verify propagation, change TIER_METADATA price in server.py and reload the UI — the cards, modal, tier-ladder, JSON-LD should all pick up the new value without a code change elsewhere. Minor completeness gap: HowItWorks.jsx, Testimonials.jsx, and ResultsPage.jsx description still have inline '$79'/'$199' string literals (narrative copy, not functional). New pytest file at /app/backend/tests/test_pricing.py covers /api/pricing shape, values, no-auth, no-rate-limit, and checkout-amount parametrized per tier.",
+  "rca of the issue": "N/A — this was a verification round for a refactor, not a bug fix. The refactor is functionally sound; all tests and UI assertions green."
+}

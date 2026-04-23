@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import MockCheckoutModal from "@/components/MockCheckoutModal";
 import ExitIntentModal from "@/components/ExitIntentModal";
 import useSeo from "@/lib/useSeo";
+import { usePricing, tiersAsList } from "@/lib/pricing";
 
 export default function ResultsPage() {
   const { sessionId } = useParams();
@@ -17,6 +18,7 @@ export default function ResultsPage() {
   const [result, setResult] = useState(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const fired = useRef(false);
+  const pricing = usePricing();
 
   useEffect(() => {
     api.get(`/quiz/result/${sessionId}`).then(({ data }) => {
@@ -131,7 +133,7 @@ export default function ResultsPage() {
                     className="inline-flex items-center gap-2 h-12 px-6 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
                     data-testid="unlock-report-btn"
                   >
-                    <Lock className="h-4 w-4" /> Pick a tier · from $79
+                    <Lock className="h-4 w-4" /> Pick a tier · from ${pricing.starter.amount_usd}
                   </button>
                 )}
                 {result.paid && (
@@ -185,26 +187,30 @@ export default function ResultsPage() {
                 <span className="mono">3 tiers</span>
               </div>
               <ul className="divide-y divide-foreground/10">
-                {[
-                  { tier: "Starter", price: "$79", items: "Score · obligations · deadlines · penalty · PDF" },
-                  { tier: "Pro", price: "$199", items: "+ FRIA · compliance badge · supplier questionnaire · GC invite", popular: true },
-                  { tier: "Bundle", price: "$399", items: "5 systems · portfolio compare + PDF export" },
-                ].map((t, i) => (
-                  <li key={i} className="px-5 py-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-display text-base tracking-tight">
-                        {t.tier}
-                        {t.popular && (
-                          <span className="ml-2 label-eyebrow text-[10px] bg-[#EAB308] text-black px-1.5 py-0.5">
-                            Popular
-                          </span>
-                        )}
-                      </span>
-                      <span className="font-display text-lg mono tabular-nums">{t.price}</span>
-                    </div>
-                    <div className="text-xs text-foreground/60 leading-relaxed">{t.items}</div>
-                  </li>
-                ))}
+                {tiersAsList(pricing).map((t) => {
+                  const items =
+                    t.id === "starter"
+                      ? "Score · obligations · deadlines · penalty · PDF"
+                      : t.id === "pro"
+                      ? "+ FRIA · compliance badge · supplier questionnaire · GC invite"
+                      : "5 systems · portfolio compare + PDF export";
+                  return (
+                    <li key={t.id} className="px-5 py-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-display text-base tracking-tight">
+                          {t.label}
+                          {t.popular && (
+                            <span className="ml-2 label-eyebrow text-[10px] bg-[#EAB308] text-black px-1.5 py-0.5">
+                              Popular
+                            </span>
+                          )}
+                        </span>
+                        <span className="font-display text-lg mono tabular-nums">${t.amount_usd}</span>
+                      </div>
+                      <div className="text-xs text-foreground/60 leading-relaxed">{items}</div>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="px-5 py-4 border-t border-foreground/20 bg-foreground/[0.03] flex items-center justify-between">
                 <span className="label-eyebrow text-foreground/60">One-time · lifetime access</span>

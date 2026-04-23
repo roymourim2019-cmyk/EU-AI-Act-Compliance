@@ -74,11 +74,68 @@ class CheckoutRequest(BaseModel):
     tier: str = "pro"  # "starter" | "pro" | "bundle"
 
 
-TIER_PRICING = {
-    "starter": {"amount_usd": 79, "credits": 1, "label": "Starter"},
-    "pro": {"amount_usd": 199, "credits": 1, "label": "Pro"},
-    "bundle": {"amount_usd": 399, "credits": 5, "label": "Bundle"},
+TIER_METADATA = {
+    "starter": {
+        "id": "starter",
+        "amount_usd": 79,
+        "credits": 1,
+        "label": "Starter",
+        "tagline": "Everything your first AI audit needs.",
+        "price_note": "one-time · 1 system",
+        "features": [
+            "Full 0–100 risk score",
+            "Obligations checklist (all tiers)",
+            "Regulatory deadline tracker",
+            "Penalty exposure summary",
+            "Branded PDF download",
+            "Shareable report link",
+        ],
+        "order": 1,
+        "popular": False,
+    },
+    "pro": {
+        "id": "pro",
+        "amount_usd": 199,
+        "credits": 1,
+        "label": "Pro",
+        "tagline": "What your legal team actually needs.",
+        "price_note": "one-time · 1 system",
+        "features": [
+            "Everything in Starter",
+            "FRIA starter template (Art 27)",
+            "Compliance badge (SVG + embed)",
+            "Supplier questionnaire (CSV, 22 Q)",
+            "Invite-your-GC email flow",
+            "India DPDP findings",
+            "Priority regulatory updates",
+        ],
+        "order": 2,
+        "popular": True,
+    },
+    "bundle": {
+        "id": "bundle",
+        "amount_usd": 399,
+        "credits": 5,
+        "label": "Bundle",
+        "tagline": "Audit the full AI portfolio once.",
+        "price_note": "one-time · 5 systems",
+        "features": [
+            "Everything in Pro × 5 reports",
+            "Portfolio comparison view",
+            "Comparison PDF export",
+            "White-label branded PDFs",
+            "Lifetime access across all 5",
+            "Effective price: $79.80 per system",
+        ],
+        "order": 3,
+        "popular": False,
+    },
 }
+
+
+# Legacy alias used by checkout endpoint — derive from TIER_METADATA so
+# there is a single source of truth.
+TIER_PRICING = {k: {"amount_usd": v["amount_usd"], "credits": v["credits"], "label": v["label"]} for k, v in TIER_METADATA.items()}
 
 
 class SubscribeRequest(BaseModel):
@@ -389,6 +446,19 @@ async def public_stats(request: Request):
     return {
         "assessed": assessed + _STATS_BASELINE_ASSESSED,
         "reports_sold": paid + _STATS_BASELINE_PAID,
+    }
+
+
+@api_router.get("/pricing")
+async def get_pricing():
+    """Single source of truth for tier pricing — consumed by frontend
+    Pricing card, checkout modal, tier-ladder, JSON-LD, FAQ copy, etc.
+    """
+    tiers = sorted(TIER_METADATA.values(), key=lambda t: t["order"])
+    return {
+        "tiers": tiers,
+        "currency": "USD",
+        "effective_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
