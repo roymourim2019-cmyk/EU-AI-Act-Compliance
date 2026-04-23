@@ -1,0 +1,29 @@
+{
+  "summary": "Iteration 9 — full regression + feature validation for regulatory updates, country-based pricing, UK/Colorado jurisdictions, Bundle-tier gating, and new pages (Updates/Trust/Changelog/Partners). Backend: 15/15 new tests pass (test_iteration9.py) covering /api/updates (6 curated records with all required fields), /api/pricing with USD/EUR/GBP/INR (₹6,550 for starter via ×83 with ₹50 charm-rounding), invalid currency fallback to USD, /api/quiz/submit jurisdictions field (valid pass-through, invalid filtered), Bundle-tier gating on /api/report/{id} (Pro+Starter return empty jurisdiction_findings, Bundle returns populated UK: / Colorado: strings), plus regression on /api/stats and /api/reports/recover. Total backend suite: 62 passed, 2 pre-existing failures reflect INTENTIONAL behavior changes (bundle features now 7 not 6; /checkout/mock invalid tier now returns 400 instead of silent-fallback to pro — iteration 8 had explicitly recommended the 400 fix). Frontend: all 22 assertions green — landing has updates-ticker between Features/HowItWorks, Pricing has USD/EUR/GBP/INR buttons and INR click correctly updates pricing-starter-amount to ₹6,550, Testimonials shows 'Early adopter · beta cohort', Navbar has Updates link, Footer has links to Updates/Changelog/Trust/Partners, /updates shows data-testid='updates-full-list', /trust /changelog /partners all load with proper h1, Partners has 4 benefit cards + application form, /quiz has uk/colorado/dpdp toggles, /quiz?tier=bundle auto-enables UK+Colorado toggles (data-state=checked). End-to-end: submitted quiz with jurisdictions=['uk','colorado'], mock-checkout as bundle, /report/{sid} renders data-testid='jurisdiction-section' with 'United Kingdom' (blue) card containing 4 UK obligations and 'Colorado (USA)' (orange) card containing 5 Colorado obligations — all scoped correctly to high_risk classification. 4 'UK:' + 5 'Colorado:' strings verified in rendered HTML.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration9.py",
+    "/app/test_reports/pytest/iteration_9_results.xml"
+  ],
+  "action_items": [
+    "(Stale tests — low priority cleanup) /app/backend/tests/test_pricing.py::test_pricing_values asserts bundle has 6 features but it now has 7 ('Effective price: $79.80 per system' bullet added). Update the assertion to 7 or make it >=6.",
+    "(Stale tests — low priority cleanup) /app/backend/tests/test_tiers.py::test_checkout_invalid_tier_defaults_to_pro is obsolete — /checkout/mock now correctly returns 400 for invalid tier (iteration 8 had recommended this exact change). Either delete the test or rewrite as test_checkout_invalid_tier_returns_400."
+  ],
+  "critical_code_review_comments": [
+    "server.py is at 730 lines — approaching the 700-line threshold. Consider splitting into modules (models.py, scoring.py, jurisdictions.py, updates.py, pricing.py) for maintainability. Not urgent but worth tracking.",
+    "CURRENCY_RATES are hardcoded in server.py. Fine for the 'fixed-rate charm pricing' product decision but should be centralised in a config file or .env if rates ever need tuning without a deploy.",
+    "jurisdiction_findings gating in /api/report strips data only in the response — the DB still stores jurisdiction_findings for pro/starter sessions. Correct behaviour (data is retained in case of future upgrade), but worth documenting as intentional.",
+    "REGULATORY_UPDATES and jurisdiction obligation maps are hardcoded Python dicts. If this feed is meant to be 'curated monthly' per the docstring, consider moving to a JSON/YAML file or Mongo collection so content edits don't require a backend deploy.",
+    "/api/updates has no 'since' or 'after' query param — for a feed that will grow, clients will always receive the first N regardless of what they've seen. Consider adding ?since=<iso_date> filtering for future.",
+    "Good: jurisdictions are sanitised at write-time (sanitised_jx in submit_quiz) AND re-gated at read-time (report endpoint tier check) — proper defense-in-depth."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration9.py (new)"],
+  "success_rate": {"backend": "100% on new features (15/15 iteration 9 tests); 97% overall (62/64 — 2 stale-assertion failures in pre-existing test files reflect intentional behavior changes)", "frontend": "100% (22/22 assertions pass)"},
+  "test_credentials": "None required — no auth on app.",
+  "seed_data_creation": "~6 TEST_-prefixed quiz sessions created during pytest (bundle + pro + starter paid sessions with jurisdictions), 1 UI-driven session (c048c97b-fefa-4678-8d98-3d3d208f4c78) for e2e report-page check.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All feature work in this iteration verified end-to-end. New routes: /updates /trust /changelog /partners. Pricing supports USD/EUR/GBP/INR via ?currency= and INR uses ₹50 charm-rounding (79×83=6557→6550). Bundle tier is the ONLY tier that surfaces jurisdiction_findings on /api/report — gating is enforced server-side. Two pre-existing tests in test_pricing.py and test_tiers.py now fail because they asserted old behaviour (6 bundle features; silent-fallback on invalid tier). These should be updated by main agent — not actual bugs. Mock checkout is still the only payment path (Razorpay skipped per user). Session used for e2e report: c048c97b-fefa-4678-8d98-3d3d208f4c78 (Bundle, high_risk, uk+colorado).",
+  "rca of the issue": "N/A — verification round. No bugs to RCA. Two pre-existing test failures identified as stale assertions against intentional product changes (documented in action_items for main agent cleanup)."
+}

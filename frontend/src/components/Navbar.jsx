@@ -20,10 +20,15 @@ export default function Navbar() {
             <>
               <a href="#how-it-works" className="sharp-link hover:text-foreground" data-testid="nav-how">How it works</a>
               <a href="#pricing" className="sharp-link hover:text-foreground" data-testid="nav-pricing">Pricing</a>
+              <Link to="/updates" className="sharp-link hover:text-foreground" data-testid="nav-updates">Updates</Link>
               <a href="#faq" className="sharp-link hover:text-foreground" data-testid="nav-faq">FAQ</a>
             </>
           ) : (
-            <Link to="/" className="sharp-link hover:text-foreground" data-testid="nav-home">Home</Link>
+            <>
+              <Link to="/" className="sharp-link hover:text-foreground" data-testid="nav-home">Home</Link>
+              <Link to="/updates" className="sharp-link hover:text-foreground" data-testid="nav-updates">Updates</Link>
+              <Link to="/trust" className="sharp-link hover:text-foreground" data-testid="nav-trust">Trust</Link>
+            </>
           )}
         </nav>
         <div className="flex items-center gap-3">

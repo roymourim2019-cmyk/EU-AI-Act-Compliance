@@ -7,6 +7,8 @@
  *  - usePricing() hydrates from /api/pricing so the backend TIER_METADATA
  *    is the runtime source of truth — change a price in server.py and the
  *    UI picks it up on next load without a redeploy.
+ *  - usePricing("INR") re-fetches with a currency param and returns
+ *    localized amounts for the pricing display.
  */
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
@@ -16,6 +18,9 @@ export const PRICING = {
     id: "starter",
     label: "Starter",
     amount_usd: 79,
+    amount: 79,
+    currency: "USD",
+    symbol: "$",
     credits: 1,
     price_note: "one-time · 1 system",
     tagline: "Everything your first AI audit needs.",
@@ -34,6 +39,9 @@ export const PRICING = {
     id: "pro",
     label: "Pro",
     amount_usd: 199,
+    amount: 199,
+    currency: "USD",
+    symbol: "$",
     credits: 1,
     price_note: "one-time · 1 system",
     tagline: "What your legal team actually needs.",
@@ -53,11 +61,15 @@ export const PRICING = {
     id: "bundle",
     label: "Bundle",
     amount_usd: 399,
+    amount: 399,
+    currency: "USD",
+    symbol: "$",
     credits: 5,
     price_note: "one-time · 5 systems",
     tagline: "Audit the full AI portfolio once.",
     features: [
       "Everything in Pro × 5 reports",
+      "UK + Colorado AI-Act cross-map",
       "Portfolio comparison view",
       "Comparison PDF export",
       "White-label branded PDFs",
@@ -71,27 +83,37 @@ export const PRICING = {
 
 export const TIER_ORDER = ["starter", "pro", "bundle"];
 
+export const SUPPORTED_CURRENCIES = ["USD", "EUR", "GBP", "INR"];
+
+// USD-denominated label used in JSON-LD, PDF copy, upsell hints. Always $.
 export const priceLabel = (tierId) => `$${PRICING[tierId].amount_usd}`;
+
+// Currency-aware display — uses the tier's current amount + symbol.
+export const displayPrice = (tier) => `${tier.symbol || "$"}${(tier.amount ?? tier.amount_usd).toLocaleString()}`;
 
 export const tiersAsList = (obj = PRICING) =>
   Object.values(obj).sort((a, b) => a.order - b.order);
 
-// Module-level cache so every caller shares the latest hydrated data.
-let _cache = null;
+// Module-level cache keyed by currency so each currency fetches once.
+const _cache = {};
 
-export function usePricing() {
-  const [data, setData] = useState(_cache || PRICING);
+export function usePricing(currency = "USD") {
+  const cur = (currency || "USD").toUpperCase();
+  const [data, setData] = useState(_cache[cur] || PRICING);
   useEffect(() => {
-    if (_cache) return;
-    api.get("/pricing").then(({ data: resp }) => {
+    if (_cache[cur]) {
+      setData(_cache[cur]);
+      return;
+    }
+    api.get(`/pricing?currency=${cur}`).then(({ data: resp }) => {
       if (!resp?.tiers) return;
       const next = {};
       resp.tiers.forEach((t) => { next[t.id] = { ...PRICING[t.id], ...t }; });
-      _cache = next;
+      _cache[cur] = next;
       setData(next);
     }).catch(() => {
       // Fall back to defaults silently.
     });
-  }, []);
+  }, [cur]);
   return data;
 }

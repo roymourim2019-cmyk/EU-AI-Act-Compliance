@@ -9,6 +9,10 @@ import ResultsPage from "@/pages/ResultsPage";
 import ReportPage from "@/pages/ReportPage";
 import RecoverPage from "@/pages/RecoverPage";
 import ComparePage from "@/pages/ComparePage";
+import UpdatesPage from "@/pages/UpdatesPage";
+import TrustPage from "@/pages/TrustPage";
+import ChangelogPage from "@/pages/ChangelogPage";
+import PartnersPage from "@/pages/PartnersPage";
 
 function App() {
   return (
@@ -21,6 +25,10 @@ function App() {
           <Route path="/report/:sessionId" element={<ReportPage />} />
           <Route path="/recover" element={<RecoverPage />} />
           <Route path="/compare" element={<ComparePage />} />
+          <Route path="/updates" element={<UpdatesPage />} />
+          <Route path="/trust" element={<TrustPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/partners" element={<PartnersPage />} />
         </Routes>
         <Toaster position="bottom-right" />
       </BrowserRouter>

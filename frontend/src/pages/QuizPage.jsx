@@ -21,6 +21,7 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState({});
   const [dpdp, setDpdp] = useState(false);
   const [dpdpAnswers, setDpdpAnswers] = useState({});
+  const [jurisdictions, setJurisdictions] = useState({ uk: false, colorado: false });
   const [submitting, setSubmitting] = useState(false);
   const firedStart = useRef(false);
 
@@ -31,6 +32,9 @@ export default function QuizPage() {
     const tier = params.get("tier");
     if (tier) {
       try { sessionStorage.setItem("preferred_tier", tier); } catch (e) { /* ignore */ }
+      // Preselect UK+CO when visitor lands from the Bundle CTA — it's the
+      // only tier that renders the cross-map, so default it ON.
+      if (tier === "bundle") setJurisdictions({ uk: true, colorado: true });
     }
     track("quiz_started", { total_questions: QUESTIONS.length, preferred_tier: tier || null });
   }, [params]);
@@ -67,6 +71,9 @@ export default function QuizPage() {
         dpdp_answers: dpdp
           ? Object.entries(dpdpAnswers).map(([qid, v]) => ({ question_id: qid, value: v }))
           : null,
+        jurisdictions: Object.entries(jurisdictions)
+          .filter(([, v]) => v)
+          .map(([k]) => k),
       };
       const { data } = await api.post("/quiz/submit", payload);
       track("quiz_completed", {
@@ -102,16 +109,37 @@ export default function QuizPage() {
               data-testid="quiz-progress-bar"
             />
           </div>
-          <div className="flex items-center gap-3 label-eyebrow">
-            <span className="text-foreground/60">DPDP (India)</span>
-            <Switch
-              checked={dpdp}
-              onCheckedChange={(v) => {
-                setDpdp(v);
-                if (!v && index >= QUESTIONS.length) setIndex(QUESTIONS.length - 1);
-              }}
-              data-testid="dpdp-toggle"
-            />
+          <div className="flex items-center gap-4 label-eyebrow flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-foreground/60">DPDP (India)</span>
+              <Switch
+                checked={dpdp}
+                onCheckedChange={(v) => {
+                  setDpdp(v);
+                  if (!v && index >= QUESTIONS.length) setIndex(QUESTIONS.length - 1);
+                }}
+                data-testid="dpdp-toggle"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-foreground/60">UK</span>
+              <Switch
+                checked={jurisdictions.uk}
+                onCheckedChange={(v) => setJurisdictions((j) => ({ ...j, uk: v }))}
+                data-testid="uk-toggle"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-foreground/60">Colorado</span>
+              <Switch
+                checked={jurisdictions.colorado}
+                onCheckedChange={(v) => setJurisdictions((j) => ({ ...j, colorado: v }))}
+                data-testid="colorado-toggle"
+              />
+            </div>
+            <span className="text-foreground/40 text-[10px] hidden md:inline">
+              UK + CO render on Bundle reports
+            </span>
           </div>
         </div>
       </div>

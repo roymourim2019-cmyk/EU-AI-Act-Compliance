@@ -120,6 +120,15 @@ export default function ReportPage() {
       report.dpdp_findings.forEach((f) => addLine(`• ${f}`, 11));
     }
 
+    if (report.tier === "bundle" && report.jurisdiction_findings) {
+      Object.entries(report.jurisdiction_findings).forEach(([jx, findings]) => {
+        if (!findings?.length) return;
+        const label = jx === "uk" ? "UK AI REGULATION" : jx === "colorado" ? "COLORADO AI ACT (SB 24-205)" : jx.toUpperCase();
+        addLine(label, 10, true, [82, 82, 91]);
+        findings.forEach((f) => addLine(`• ${f}`, 11));
+      });
+    }
+
     addLine(
       "\nThis report is a non-binding diagnostic. It is not legal advice. Consult qualified counsel before any regulatory filing.",
       9,
@@ -359,6 +368,43 @@ export default function ReportPage() {
                   </li>
                 ))}
               </ul>
+            </div>
+          </section>
+        )}
+
+        {/* Multi-jurisdiction cross-map — Bundle only */}
+        {report.tier === "bundle" && report.jurisdiction_findings && Object.keys(report.jurisdiction_findings).length > 0 && (
+          <section className="border-b border-foreground/10" data-testid="jurisdiction-section">
+            <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-12">
+              <div className="label-eyebrow text-foreground/60 mb-4">§ 05b · Multi-jurisdiction cross-map</div>
+              <p className="max-w-3xl text-foreground/70 leading-relaxed mb-8">
+                The same system under UK AI Regulation and Colorado AI Act (SB 24-205). Obligations below replace or
+                layer on top of the EU ones — cite your jurisdiction before citing an article.
+              </p>
+              <div className="grid md:grid-cols-2 gap-6">
+                {Object.entries(report.jurisdiction_findings).map(([jx, findings]) => {
+                  const meta = {
+                    uk: { label: "United Kingdom", accent: "#0020C2", tag: "UK AI Regulation · 2024 White Paper" },
+                    colorado: { label: "Colorado (USA)", accent: "#EA580C", tag: "SB 24-205 · eff. 1 Feb 2026" },
+                  }[jx] || { label: jx.toUpperCase(), accent: "#09090B", tag: "" };
+                  return (
+                    <div key={jx} className="border border-foreground/15" data-testid={`jurisdiction-${jx}`}>
+                      <div className="p-4 border-b border-foreground/15" style={{ background: meta.accent, color: "#fff" }}>
+                        <div className="font-display text-xl tracking-tight">{meta.label}</div>
+                        <div className="label-eyebrow opacity-80 mt-1">{meta.tag}</div>
+                      </div>
+                      <ul className="divide-y divide-foreground/10">
+                        {findings.map((f, i) => (
+                          <li key={i} className="p-4 flex items-start gap-3">
+                            <span className="mono text-xs text-foreground/50 w-8 shrink-0">/{String(i + 1).padStart(2, "0")}</span>
+                            <span className="text-sm leading-relaxed">{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}

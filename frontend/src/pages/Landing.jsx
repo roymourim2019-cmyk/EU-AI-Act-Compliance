@@ -6,6 +6,7 @@ import HowItWorks from "@/components/HowItWorks";
 import Testimonials from "@/components/Testimonials";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
+import UpdatesTicker from "@/components/UpdatesTicker";
 import Footer from "@/components/Footer";
 import useSeo from "@/lib/useSeo";
 import { PRICING, tiersAsList } from "@/lib/pricing";
@@ -69,6 +70,7 @@ export default function Landing() {
       <main>
         <Hero />
         <Features />
+        <UpdatesTicker />
         <HowItWorks />
         <Testimonials />
         <Pricing />

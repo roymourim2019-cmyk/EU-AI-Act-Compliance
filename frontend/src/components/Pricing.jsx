@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, Sparkles, Layers } from "lucide-react";
-import { usePricing, tiersAsList, priceLabel } from "@/lib/pricing";
+import { usePricing, tiersAsList, displayPrice, SUPPORTED_CURRENCIES } from "@/lib/pricing";
 
 const ACCENT_ICON = { pro: Sparkles, bundle: Layers };
 
 export default function Pricing() {
-  const pricing = usePricing();
+  const [currency, setCurrency] = useState("USD");
+  const pricing = usePricing(currency);
   const tiers = tiersAsList(pricing);
 
   const pickTier = (id) => {
@@ -28,6 +29,33 @@ export default function Pricing() {
             an EU AI Act readiness review. We ship the same obligations mapping as a signed, editable
             artifact — at a fraction of the price, and without a six-week engagement.
           </div>
+        </div>
+
+        {/* Currency selector */}
+        <div className="mb-6 flex items-center gap-3 flex-wrap" data-testid="currency-selector">
+          <span className="label-eyebrow text-foreground/60">Show prices in</span>
+          <div className="flex border border-foreground/15">
+            {SUPPORTED_CURRENCIES.map((c) => {
+              const active = currency === c;
+              return (
+                <button
+                  key={c}
+                  onClick={() => setCurrency(c)}
+                  className={`px-3 h-9 label-eyebrow border-r border-foreground/15 last:border-r-0 transition-all ${
+                    active ? "bg-foreground text-background" : "hover:bg-foreground/5"
+                  }`}
+                  data-testid={`currency-${c}`}
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
+          {currency !== "USD" && (
+            <span className="label-eyebrow text-foreground/50">
+              · Charged in USD at checkout. Shown for reference.
+            </span>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 border-t border-l border-foreground/15">
@@ -66,7 +94,14 @@ export default function Pricing() {
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2 mb-5">
-                  <span className="font-display text-6xl tracking-tighter">{priceLabel(t.id)}</span>
+                  <span className="font-display text-6xl tracking-tighter" data-testid={`pricing-${t.id}-amount`}>
+                    {displayPrice(t)}
+                  </span>
+                  {currency !== "USD" && (
+                    <span className={`label-eyebrow ${isPopular ? "text-background/50" : "text-foreground/50"}`}>
+                      ≈ ${t.amount_usd}
+                    </span>
+                  )}
                 </div>
                 <p className={`mb-6 text-sm ${mutedText}`}>{t.tagline}</p>
                 <ul className="space-y-2 mb-8">
@@ -83,7 +118,7 @@ export default function Pricing() {
                   className={`mt-auto inline-flex items-center justify-center w-full h-12 label-eyebrow transition-all duration-200 ${ctaCls}`}
                   data-testid={`pricing-${t.id}-cta`}
                 >
-                  {`Start quiz · unlock ${priceLabel(t.id)}`}
+                  {`Start quiz · unlock ${displayPrice(t)}`}
                 </Link>
               </div>
             );

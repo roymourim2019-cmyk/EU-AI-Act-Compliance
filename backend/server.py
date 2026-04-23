@@ -50,6 +50,9 @@ class QuizSubmission(BaseModel):
     dpdp_answers: Optional[List[QuizAnswer]] = None
     email: Optional[str] = None
     org_name: Optional[str] = None
+    # Additional jurisdictions to evaluate beyond EU. Valid values: "uk", "colorado".
+    # Findings are stored on the session but only surfaced in the Bundle tier report.
+    jurisdictions: Optional[List[str]] = None
 
 
 class QuizResult(BaseModel):
@@ -64,6 +67,8 @@ class QuizResult(BaseModel):
     penalties: str
     art_references: List[str]
     dpdp_findings: List[str]
+    jurisdictions: List[str] = []
+    jurisdiction_findings: Dict[str, List[str]] = {}
     paid: bool = False
     created_at: str
 
@@ -121,6 +126,7 @@ TIER_METADATA = {
         "price_note": "one-time · 5 systems",
         "features": [
             "Everything in Pro × 5 reports",
+            "UK + Colorado AI-Act cross-map",
             "Portfolio comparison view",
             "Comparison PDF export",
             "White-label branded PDFs",
@@ -324,6 +330,151 @@ def dpdp_evaluate(answers: Optional[List[QuizAnswer]]) -> List[str]:
     return findings
 
 
+# ---------- Multi-jurisdiction cross-map (UK + Colorado) ----------
+# These obligations are emitted alongside the EU classification when the
+# buyer holds a Bundle tier and opted-in to the additional jurisdictions.
+# Scoped to "what changes for you" per jurisdiction — not a full restatement.
+UK_AI_OBLIGATIONS = {
+    "prohibited": [
+        "UK: UK does not ban these practices outright — review ICO guidance on automated decisions and DPA 2018 §14 safeguards before UK deployment.",
+        "UK: Apply Equality Act 2010 discrimination analysis; document a DPIA under UK GDPR Art 35.",
+    ],
+    "high_risk": [
+        "UK: Follow the AI Regulation White Paper five principles (safety, transparency, fairness, accountability, contestability).",
+        "UK: Register high-impact systems with the sector regulator (FCA / Ofcom / MHRA / CMA) as applicable.",
+        "UK: DPIA under UK GDPR Art 35 + ICO AI & Data Protection Risk Toolkit.",
+        "UK: Algorithmic Transparency Recording Standard (ATRS) for public-sector deployments.",
+    ],
+    "gpai": [
+        "UK: Voluntary AI Safety Institute pre-deployment evaluation for frontier models.",
+        "UK: Publish a model card covering capabilities, training data provenance, and known limitations.",
+    ],
+    "limited": [
+        "UK: Online Safety Act duties may apply to generative-content features.",
+        "UK: Label AI-generated media to meet ICO transparency expectations.",
+    ],
+    "minimal": [
+        "UK: Maintain AI inventory; voluntary alignment with the five principles recommended.",
+    ],
+}
+
+COLORADO_AI_OBLIGATIONS = {
+    "prohibited": [
+        "Colorado (SB 24-205): Consequential decisions using these techniques trigger algorithmic discrimination duty of care. Cease or redesign.",
+    ],
+    "high_risk": [
+        "Colorado: Classified as 'high-risk AI' when used in consequential decisions (employment, lending, housing, education, health, insurance, legal, govt services).",
+        "Colorado: Annual impact assessment + reasonable care to protect consumers from algorithmic discrimination (effective 1 Feb 2026).",
+        "Colorado: Pre-decision notice to consumers + explanation of principal factors + right to correction and human appeal.",
+        "Colorado: Public statement summarising types of AI systems in use and risk-management program.",
+        "Colorado: Report algorithmic-discrimination incidents to Colorado AG within 90 days of discovery.",
+    ],
+    "gpai": [
+        "Colorado: Developers must provide deployers with documentation sufficient to complete an impact assessment.",
+        "Colorado: Maintain incident-disclosure channel for downstream deployers.",
+    ],
+    "limited": [
+        "Colorado: Consumer-facing AI must disclose interaction with an AI system (unless obvious).",
+    ],
+    "minimal": [
+        "Colorado: No mandatory obligations; voluntary NIST AI RMF alignment recommended.",
+    ],
+}
+
+VALID_JURISDICTIONS = {"uk", "colorado"}
+
+
+def jurisdiction_evaluate(risk_level: str, jurisdictions: Optional[List[str]]) -> Dict[str, List[str]]:
+    out: Dict[str, List[str]] = {}
+    if not jurisdictions:
+        return out
+    wanted = [j.lower() for j in jurisdictions if j.lower() in VALID_JURISDICTIONS]
+    if "uk" in wanted:
+        out["uk"] = UK_AI_OBLIGATIONS.get(risk_level, UK_AI_OBLIGATIONS["minimal"])
+    if "colorado" in wanted:
+        out["colorado"] = COLORADO_AI_OBLIGATIONS.get(risk_level, COLORADO_AI_OBLIGATIONS["minimal"])
+    return out
+
+
+# ---------- Regulatory updates feed (seeded; curated monthly) ----------
+REGULATORY_UPDATES = [
+    {
+        "id": "upd-2026-02-12",
+        "date": "12 Feb 2026",
+        "tag": "EU AI Office",
+        "title": "GPAI Code of Practice — second iteration published",
+        "body": "The AI Office published Revision 2 of the GPAI Code of Practice, tightening copyright-policy templates and systemic-risk evaluation cadence for models trained on ≥10²⁵ FLOPs.",
+        "source": "European Commission — AI Office",
+        "url": "https://digital-strategy.ec.europa.eu/en/policies/ai-office",
+    },
+    {
+        "id": "upd-2026-02-02",
+        "date": "2 Feb 2026",
+        "tag": "Colorado",
+        "title": "Colorado AI Act obligations take effect",
+        "body": "SB 24-205 duty of reasonable care against algorithmic discrimination is now enforceable. Pre-decision notice and impact-assessment obligations apply to covered deployers.",
+        "source": "Colorado Attorney General",
+        "url": "https://coag.gov/",
+    },
+    {
+        "id": "upd-2026-01-28",
+        "date": "28 Jan 2026",
+        "tag": "Annex III",
+        "title": "Draft harmonised standard EN AI 17894 out for consultation",
+        "body": "CEN-CENELEC JTC 21 released the draft conformity-assessment standard for Annex III employment-screening systems. Comment period closes 31 Mar 2026.",
+        "source": "CEN-CENELEC JTC 21",
+        "url": "https://www.cencenelec.eu/areas-of-work/cen-cenelec-topics/artificial-intelligence/",
+    },
+    {
+        "id": "upd-2026-01-14",
+        "date": "14 Jan 2026",
+        "tag": "Enforcement",
+        "title": "First Art 5 enforcement action — Italy",
+        "body": "Italian Garante fined a social-scoring pilot operator €2.1M for deployment of a prohibited practice under Art 5(1)(c). Decision is appealable.",
+        "source": "Garante Privacy (IT)",
+        "url": "https://www.garanteprivacy.it/",
+    },
+    {
+        "id": "upd-2025-12-20",
+        "date": "20 Dec 2025",
+        "tag": "UK",
+        "title": "UK AI Safety Institute — pre-deployment evaluation portal",
+        "body": "AISI opened voluntary pre-deployment evaluation submissions for frontier models. Outcomes feed the DSIT oversight framework expected in 2026.",
+        "source": "AI Safety Institute (UK)",
+        "url": "https://www.aisi.gov.uk/",
+    },
+    {
+        "id": "upd-2025-11-06",
+        "date": "6 Nov 2025",
+        "tag": "FRIA",
+        "title": "FRIA template v1.0 released by AI Office",
+        "body": "Official FRIA template (Art 27) published. Covers rights-affected stakeholders, residual-risk scoring, and annual review cadence.",
+        "source": "European Commission — AI Office",
+        "url": "https://digital-strategy.ec.europa.eu/en/library",
+    },
+]
+
+
+# ---------- Currency conversion (simple fixed-rate table for pricing) ----------
+# Rates approximate Feb 2026 retail. Refreshed manually; kept fixed so the
+# checkout total never shifts under the user's feet between page and pay.
+CURRENCY_RATES = {
+    "USD": {"rate": 1.0, "symbol": "$", "prefix": True},
+    "EUR": {"rate": 0.92, "symbol": "€", "prefix": True},
+    "INR": {"rate": 83.0, "symbol": "₹", "prefix": True},
+    "GBP": {"rate": 0.79, "symbol": "£", "prefix": True},
+}
+
+
+def _round_price(amount: float, currency: str) -> float:
+    """Charm-pricing rounding so INR doesn't end in random paise."""
+    if currency == "INR":
+        # Round to nearest ₹50 for readable INR pricing.
+        return float(int(round(amount / 50.0)) * 50)
+    return round(amount, 2)
+
+
+
 # ---------- Endpoints ----------
 @api_router.get("/")
 async def root():
@@ -336,6 +487,8 @@ async def submit_quiz(request: Request, submission: QuizSubmission):
     classification = classify_and_score(submission.answers)
     risk_level = classification["risk_level"]
     session_id = str(uuid.uuid4())
+    sanitised_jx = [j.lower() for j in (submission.jurisdictions or []) if j.lower() in VALID_JURISDICTIONS]
+    jx_findings = jurisdiction_evaluate(risk_level, sanitised_jx)
     result = {
         "session_id": session_id,
         "score": classification["score"],
@@ -349,6 +502,8 @@ async def submit_quiz(request: Request, submission: QuizSubmission):
         "dpdp_findings": dpdp_evaluate(submission.dpdp_answers)
         if submission.dpdp_enabled
         else [],
+        "jurisdictions": sanitised_jx,
+        "jurisdiction_findings": jx_findings,
         "paid": False,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "email": submission.email,
@@ -452,14 +607,47 @@ async def public_stats(request: Request):
 
 
 @api_router.get("/pricing")
-async def get_pricing():
+async def get_pricing(currency: str = "USD"):
     """Single source of truth for tier pricing — consumed by frontend
     Pricing card, checkout modal, tier-ladder, JSON-LD, FAQ copy, etc.
+
+    Optional ?currency=INR|EUR|GBP|USD returns localized amounts using
+    a fixed-rate table (see CURRENCY_RATES). Actual checkout is always
+    charged in USD today; the localized view is informational.
     """
-    tiers = sorted(TIER_METADATA.values(), key=lambda t: t["order"])
+    cur = (currency or "USD").upper()
+    if cur not in CURRENCY_RATES:
+        cur = "USD"
+    meta = CURRENCY_RATES[cur]
+    tiers_usd = sorted(TIER_METADATA.values(), key=lambda t: t["order"])
+    tiers_out = []
+    for t in tiers_usd:
+        local_amount = _round_price(t["amount_usd"] * meta["rate"], cur)
+        tiers_out.append({
+            **t,
+            "amount": local_amount,
+            "amount_local": local_amount,
+            "currency": cur,
+            "symbol": meta["symbol"],
+        })
     return {
-        "tiers": tiers,
-        "currency": "USD",
+        "tiers": tiers_out,
+        "currency": cur,
+        "symbol": meta["symbol"],
+        "supported_currencies": list(CURRENCY_RATES.keys()),
+        "charge_currency": "USD",
+        "effective_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@api_router.get("/updates")
+@limiter.limit("60/minute")
+async def get_updates(request: Request, limit: int = 6):
+    """Curated regulatory-updates feed for the 'Last updated' ticker."""
+    limit = max(1, min(int(limit), len(REGULATORY_UPDATES)))
+    return {
+        "updates": REGULATORY_UPDATES[:limit],
+        "total": len(REGULATORY_UPDATES),
         "effective_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -486,6 +674,10 @@ async def get_full_report(session_id: str):
         "residual_risk": "State the residual risk level and justify acceptance.",
         "review_cadence": "Define review schedule (at minimum annually or upon substantial modification).",
     }
+    # Jurisdiction cross-map is a Bundle-tier feature. Strip it otherwise so
+    # lower tiers can't render paid content via inspector.
+    if doc.get("tier") != "bundle":
+        doc = {**doc, "jurisdiction_findings": {}, "jurisdictions": doc.get("jurisdictions", [])}
     return {
         **doc,
         "fria_template": fria_template if risk_level == "high_risk" else None,
