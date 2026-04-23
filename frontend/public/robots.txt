@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /results/
+Disallow: /report/
+Disallow: /compare
+
+Sitemap: https://compliance-compass-10.preview.emergentagent.com/sitemap.xml

@@ -7,10 +7,16 @@ import { RISK_META } from "@/lib/quiz-data";
 import { track } from "@/lib/analytics";
 import { toast } from "sonner";
 import { Mail, ArrowRight, Inbox, Lock, Check, GitCompare, X } from "lucide-react";
+import useSeo from "@/lib/useSeo";
 
 const MAX_COMPARE = 3;
 
 export default function RecoverPage() {
+  useSeo({
+    title: "Recover your EU AI Act report — by email",
+    description: "Lost your report link? Enter your purchase email to recover your last 5 paid EU AI Act reports.",
+    canonical: typeof window !== "undefined" ? window.location.origin + "/recover" : "",
+  });
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

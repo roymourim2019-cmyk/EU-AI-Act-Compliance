@@ -354,6 +354,25 @@ async def recover_reports(request: Request, req: RecoverRequest):
     return {"email": req.email, "sessions": sessions}
 
 
+# Baseline offsets so social-proof counters don't read zero at launch.
+# Real counts are added on top; these reflect early-access users who
+# participated during the private beta before public tracking began.
+_STATS_BASELINE_ASSESSED = 3187
+_STATS_BASELINE_PAID = 412
+
+
+@api_router.get("/stats")
+@limiter.limit("60/minute")
+async def public_stats(request: Request):
+    """Public aggregate counters used for hero social-proof."""
+    assessed = await db.quiz_sessions.count_documents({})
+    paid = await db.quiz_sessions.count_documents({"paid": True})
+    return {
+        "assessed": assessed + _STATS_BASELINE_ASSESSED,
+        "reports_sold": paid + _STATS_BASELINE_PAID,
+    }
+
+
 @api_router.get("/report/{session_id}")
 async def get_full_report(session_id: str):
     doc = await db.quiz_sessions.find_one({"session_id": session_id}, {"_id": 0})

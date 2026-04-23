@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Countdown from "@/components/Countdown";
+import TrustCounter from "@/components/TrustCounter";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 
 export default function Hero() {
@@ -63,6 +64,9 @@ export default function Hero() {
             <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Aligned with Reg. 2024/1689</div>
             <div>Covers Art 5 · Annex III · Art 27 FRIA · Art 52–55 GPAI</div>
             <div>India DPDP toggle included</div>
+          </div>
+          <div className="mt-6">
+            <TrustCounter />
           </div>
         </div>
 

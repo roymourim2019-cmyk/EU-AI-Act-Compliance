@@ -7,8 +7,14 @@ import { track } from "@/lib/analytics";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import useSeo from "@/lib/useSeo";
 
 export default function QuizPage() {
+  useSeo({
+    title: "EU AI Act Scorecard Quiz — 10 questions, 5 minutes",
+    description: "Free 10-question EU AI Act 2026 diagnostic. Covers Art 5, Annex III, Art 52–55 GPAI. Instant risk classification.",
+    canonical: typeof window !== "undefined" ? window.location.origin + "/quiz" : "",
+  });
   const navigate = useNavigate();
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState({});

@@ -1,0 +1,28 @@
+{
+  "summary": "Iteration 8 testing (file: iteration_5.json — 5th report on disk). Verified SEO + profitability additions: /api/stats endpoint (shape + baseline >=3187/>=412 + monotonic + 60/min rate limit), /robots.txt & /sitemap.xml reachable, per-route document.title on /, /quiz, /recover, /results/:id, JSON-LD graph with Organization+WebApplication+FAQPage, OG/twitter/canonical meta, TrustCounter rendering comma-formatted numbers from /api/stats, Pricing 3-tier layout with launch-pricing-band ($49/$99/1 Sep 2026), Enterprise mailto CTA (subject contains 'Enterprise plan'), 'Most popular' ribbon + strikethrough $99 on paid card, ExitIntentModal firing once per session on unpaid results AND suppressed on paid results, sessionStorage dedup flag set correctly. All 21 backend tests pass (4 new /api/stats tests + 17 regression). Zero issues found.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_stats.py",
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_rate_limits.py",
+    "/app/backend/tests/test_recover.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ExitIntentModal.jsx uses legacy e.toElement (non-standard, deprecated). Modern browsers only fire e.relatedTarget; the `&& !e.toElement` works today because both are null, but it's stale polyfill code — can simplify to `if (!e.relatedTarget)`.",
+    "useSeo.js creates meta tags but never removes keywords/og tags on unmount, so stale keywords from /recover page may persist when navigating to /results. Low impact (last-write-wins on each page visit), but could confuse SEO crawlers if a user SSRs a hydrated snapshot. Consider resetting or always setting keywords on every route.",
+    "TrustCounter.jsx silently swallows API errors with `.catch(() => {})` and then returns null. Consider logging or showing a zero-state so ops notices a regression. Not user-facing but bad telemetry.",
+    "Landing.jsx JSON-LD uses `typeof window !== 'undefined' ? window.location.origin : ''` at module evaluation time. In a CRA dev HMR this is fine, but when pre-rendered (if ever) ORIGIN will be '' and URLs in schema.org graph become invalid. Compute inside the component render.",
+    "Pricing.jsx hardcodes 'hello@roys-enterprise.com' in the mailto — move to env var for easier rebranding."
+  ],
+  "updated_files": ["/app/backend/tests/test_stats.py"],
+  "success_rate": {"backend": "100% (21/21)", "frontend": "100% (all 13 assertions)"},
+  "test_credentials": "None required. Seed email compare@test.com still has paid sessions from iter 4.",
+  "seed_data_creation": "Created ~3 test quiz sessions and 1 paid (TEST_exit@example.com) as part of /api/stats monotonic + exit-intent paid-suppression tests. Baseline offsets unaffected.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend: /api/stats is rate-limited 60/min — use unique X-Forwarded-For IP per test to avoid cross-pollution. Frontend: exit-intent modal is dedup'd by sessionStorage key 'eu_ai_act_exit_intent_shown'; clear it between tests. Synthetic MouseEvent with clientY:-5 & relatedTarget:null on document reliably triggers the handler (Playwright page.mouse.move to y<0 also works). ExitIntentModal.enabled={!result.paid}, so create a paid session via POST /api/quiz/submit + POST /api/checkout/mock to test the negative case.",
+  "rca of the issue": "N/A — no issues encountered."
+}

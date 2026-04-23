@@ -8,6 +8,8 @@ import { RISK_META } from "@/lib/quiz-data";
 import { Lock, Share2, ArrowRight, RotateCcw, Copy } from "lucide-react";
 import { toast } from "sonner";
 import MockCheckoutModal from "@/components/MockCheckoutModal";
+import ExitIntentModal from "@/components/ExitIntentModal";
+import useSeo from "@/lib/useSeo";
 
 export default function ResultsPage() {
   const { sessionId } = useParams();
@@ -29,6 +31,20 @@ export default function ResultsPage() {
     });
   }, [sessionId, navigate]);
 
+  const meta = result
+    ? RISK_META[result.risk_level] || RISK_META.minimal
+    : RISK_META.minimal;
+
+  useSeo({
+    title: result
+      ? `Your EU AI Act risk: ${meta.label} (${result.score}/100)`
+      : "Your EU AI Act scorecard",
+    description: result
+      ? `Your AI system classified as ${meta.label} under the EU AI Act 2026. Unlock the full report with obligations, FRIA, supplier questionnaire, and deadlines for $49.`
+      : "Your EU AI Act compliance scorecard results.",
+    canonical: typeof window !== "undefined" ? window.location.href : "",
+  });
+
   if (!result) {
     return (
       <div className="min-h-screen bg-background text-foreground grid place-items-center">
@@ -36,8 +52,6 @@ export default function ResultsPage() {
       </div>
     );
   }
-
-  const meta = RISK_META[result.risk_level] || RISK_META.minimal;
 
   const share = async () => {
     const url = window.location.origin;
@@ -216,6 +230,7 @@ export default function ResultsPage() {
         sessionId={sessionId}
         onSuccess={onPaid}
       />
+      <ExitIntentModal enabled={!result.paid} onUpgrade={() => setCheckoutOpen(true)} />
     </div>
   );
 }
