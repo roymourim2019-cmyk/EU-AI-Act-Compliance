@@ -26,21 +26,16 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 9 — 3-tier pricing + strict paywall)
-- ✅ All iter 1–8 features
-- ✅ **Pricing ladder restructured** (replaces $49 single + Enterprise mailto):
-  - **Free $0** — 10-question quiz + risk tier label only. Score, obligations, downloads all gated. Designed to force upgrade.
-  - **Starter $29** — one-system essentials: score + obligations + deadlines + penalty + branded PDF.
-  - **Pro $79** (Most popular) — everything in Starter + FRIA starter + compliance badge SVG/embed + supplier questionnaire CSV + GC-invite email + India DPDP findings.
-  - **Bundle $149** — Pro × 5 systems + portfolio comparison + comparison PDF export + priority updates (effective $29.80/system).
-- ✅ Backend: `CheckoutRequest.tier`, `TIER_PRICING` map, `/api/checkout/mock` stores `tier`/`amount_usd`/`credits_remaining` on session; invalid tier → default "pro".
-- ✅ Results page **strict paywall**: unpaid shows `??/100` instead of the numeric score, no obligations/penalty/deadlines; shows a 3-tier ladder sidebar + "Pick a tier · from $29" CTA. Paid shows full score + "Open full report" CTA; ladder hidden.
-- ✅ `MockCheckoutModal` has an inline `tier-picker` with live price update and default from `sessionStorage.preferred_tier`.
-- ✅ `ReportPage` tier-gated: Starter hides FRIA/supplier questionnaire/GC invite/compliance badge and shows an upgrade hint; Pro & Bundle show all.
-- ✅ FAQ: removed "If we didn't cover it…" contact line. Replaced generic Q&A with tier-comparison answers.
-- ✅ ExitIntentModal copy refreshed to "Pick a tier · from $29".
-- ✅ JSON-LD updated: WebApplication offers list covers all 3 price points.
-- ✅ **41/41 backend + 29/29 frontend tests pass**, zero critical issues.
+## Implemented (2026-02-23 · iter 10 — Premium pricing, no Free tier, no Emergent branding)
+- ✅ **Prices raised to premium band**: Starter **$79** · Pro **$199** (Most popular) · Bundle **$399** (5 systems, effective $79.80/system).
+- ✅ **Free tier removed entirely** from the Pricing section — 3 paid tiers only. Results page paywall unchanged (quiz still free to take, all artifacts require payment).
+- ✅ **Pricing positioning rewritten**: "Big-four audit firms quote $8,000–$25,000…" anchors the premium/value-for-money story.
+- ✅ Pro tier now includes "Priority regulatory updates". Bundle tier adds "White-label branded PDFs".
+- ✅ **Emergent branding removed**: `#emergent-badge` hidden via inline `display:none` in `index.html` + global CSS safety net (`#emergent-badge, [id^="emergent-"], [class*="emergent-badge"] { display: none !important; }`). Verified: no "Made with Emergent" text in DOM, badge not visible.
+- ✅ All price references updated: MockCheckoutModal, Hero CTA, ExitIntentModal, ResultsPage tier-ladder, Landing JSON-LD offers, FAQ tier comparison, Testimonials quote, HowItWorks copy.
+- ✅ New FAQ: "How does this compare to a law-firm audit?" replaces the stale "Free tier" Q&A.
+- ✅ Hero stale copy fix: "No signup required to see your risk classification".
+- ✅ **41/41 backend pytest + ~25/25 frontend assertions pass**. Zero issues.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret

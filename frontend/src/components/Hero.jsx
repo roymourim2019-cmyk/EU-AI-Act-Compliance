@@ -107,7 +107,7 @@ export default function Hero() {
             </div>
           </div>
           <div className="mt-4 label-eyebrow text-foreground/50 leading-relaxed">
-            Your results are generated instantly after the quiz. No signup required for the free tier.
+            Your results are generated instantly after the quiz. No signup required to see your risk classification.
           </div>
         </div>
       </div>
