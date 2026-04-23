@@ -26,14 +26,21 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 8 — SEO + profitability push)
-- ✅ All iter 1–7 features
-- ✅ **SEO**: `public/robots.txt` (disallow private session routes) + `public/sitemap.xml` (Landing/Quiz/Recover). Rich JSON-LD on Landing (Organization + WebApplication + Product Offer + FAQPage). `useSeo` hook for per-route `<title>`, description, canonical, OG + Twitter cards + keywords on Landing/Quiz/Recover/Results.
-- ✅ **Live trust counter** (`/api/stats`): `{assessed, reports_sold}` with baseline offsets (3187/412) so the hero never looks empty. Rate-limited 60/min.
-- ✅ **Launch-pricing urgency band**: "$49 · ~~$99~~ · rises to $99 on 1 Sep 2026 · first 500 customers only" above the pricing cards.
-- ✅ **Enterprise tier** (3rd pricing card): "Let's talk" with `mailto:` Book-a-call (20+ systems, white-label PDFs, priority updates, custom FRIA workshop, Slack channel, annual 30% off).
-- ✅ **Exit-intent modal** on `/results/:id` for unpaid sessions only — top-edge `mouseout` detection, session-deduped via sessionStorage, recaps value props + routes to checkout. Suppressed on paid.
-- ✅ 21/21 backend tests pass (4 new `/api/stats` tests + 17 regression). Zero frontend issues from testing agent.
+## Implemented (2026-02-23 · iter 9 — 3-tier pricing + strict paywall)
+- ✅ All iter 1–8 features
+- ✅ **Pricing ladder restructured** (replaces $49 single + Enterprise mailto):
+  - **Free $0** — 10-question quiz + risk tier label only. Score, obligations, downloads all gated. Designed to force upgrade.
+  - **Starter $29** — one-system essentials: score + obligations + deadlines + penalty + branded PDF.
+  - **Pro $79** (Most popular) — everything in Starter + FRIA starter + compliance badge SVG/embed + supplier questionnaire CSV + GC-invite email + India DPDP findings.
+  - **Bundle $149** — Pro × 5 systems + portfolio comparison + comparison PDF export + priority updates (effective $29.80/system).
+- ✅ Backend: `CheckoutRequest.tier`, `TIER_PRICING` map, `/api/checkout/mock` stores `tier`/`amount_usd`/`credits_remaining` on session; invalid tier → default "pro".
+- ✅ Results page **strict paywall**: unpaid shows `??/100` instead of the numeric score, no obligations/penalty/deadlines; shows a 3-tier ladder sidebar + "Pick a tier · from $29" CTA. Paid shows full score + "Open full report" CTA; ladder hidden.
+- ✅ `MockCheckoutModal` has an inline `tier-picker` with live price update and default from `sessionStorage.preferred_tier`.
+- ✅ `ReportPage` tier-gated: Starter hides FRIA/supplier questionnaire/GC invite/compliance badge and shows an upgrade hint; Pro & Bundle show all.
+- ✅ FAQ: removed "If we didn't cover it…" contact line. Replaced generic Q&A with tier-comparison answers.
+- ✅ ExitIntentModal copy refreshed to "Pick a tier · from $29".
+- ✅ JSON-LD updated: WebApplication offers list covers all 3 price points.
+- ✅ **41/41 backend + 29/29 frontend tests pass**, zero critical issues.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret

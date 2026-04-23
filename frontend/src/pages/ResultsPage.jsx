@@ -177,7 +177,8 @@ export default function ResultsPage() {
               </div>
             </div>
 
-            {/* Right panel — value-prop ladder instead of teaser */}
+            {/* Right panel — value-prop ladder instead of teaser (unpaid only) */}
+            {!result.paid && (
             <div className="md:col-span-5 border border-foreground/20" data-testid="tier-ladder">
               <div className="px-5 py-3 border-b border-foreground/20 flex items-center justify-between label-eyebrow">
                 <span>What&apos;s behind the paywall</span>
@@ -218,10 +219,9 @@ export default function ResultsPage() {
                 )}
               </div>
             </div>
+            )}
           </div>
         </section>
-
-        {/* Penalty + deadlines strip (paid only) */}
         {result.paid && (
         <section className="border-b border-foreground/10 bg-foreground text-background">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-12 grid md:grid-cols-2 gap-8">
