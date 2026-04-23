@@ -13,7 +13,7 @@ export default function ExitIntentModal({ onUpgrade, enabled = true }) {
     if (sessionStorage.getItem(STORAGE_KEY)) return;
     const onMouseOut = (e) => {
       if (e.clientY > 0) return; // only trigger on top exit
-      if (!e.relatedTarget && !e.toElement) {
+    if (!e.relatedTarget) {
         sessionStorage.setItem(STORAGE_KEY, "1");
         track("exit_intent_shown", {});
         setOpen(true);

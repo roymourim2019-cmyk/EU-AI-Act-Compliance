@@ -4,7 +4,10 @@ import { api } from "@/lib/api";
 export default function TrustCounter() {
   const [stats, setStats] = useState(null);
   useEffect(() => {
-    api.get("/stats").then(({ data }) => setStats(data)).catch(() => {});
+    api.get("/stats").then(({ data }) => setStats(data)).catch((err) => {
+      // eslint-disable-next-line no-console
+      console.warn("[TrustCounter] /api/stats failed:", err?.message);
+    });
   }, []);
   if (!stats) return null;
   return (

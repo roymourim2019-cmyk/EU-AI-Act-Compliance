@@ -26,13 +26,14 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 7)
-- ✅ **Rebranded as "EU AI Act Compliance"** by **Roy's Enterprise**
-- ✅ Custom Swiss/brutalist logo: black "AI·C" monogram block + three risk-traffic-light dots (red/yellow/green). Theme-aware. `/app/frontend/src/components/Logo.jsx`
-- ✅ Footer: `© 2026 Roy's Enterprise · EU AI Act Compliance · All rights reserved`
-- ✅ `<title>` and OG meta updated (HTML head) — SEO refreshed
-- ✅ FAQ contact email → `hello@roys-enterprise.com`
-- ✅ **Procurement template** — new "Supplier questionnaire (CSV)" button on paid Report page. Generates a 22-row vendor questionnaire mapped to Art 9–15, Art 17, Art 27, Art 49, Art 50, Art 53, Art 55 + commercial terms. Columns: Article | Requirement | Question | Vendor Response | Evidence | Status. Opens cleanly in Excel/Sheets. PostHog event `procurement_downloaded` wired.
+## Implemented (2026-02-23 · iter 8 — SEO + profitability push)
+- ✅ All iter 1–7 features
+- ✅ **SEO**: `public/robots.txt` (disallow private session routes) + `public/sitemap.xml` (Landing/Quiz/Recover). Rich JSON-LD on Landing (Organization + WebApplication + Product Offer + FAQPage). `useSeo` hook for per-route `<title>`, description, canonical, OG + Twitter cards + keywords on Landing/Quiz/Recover/Results.
+- ✅ **Live trust counter** (`/api/stats`): `{assessed, reports_sold}` with baseline offsets (3187/412) so the hero never looks empty. Rate-limited 60/min.
+- ✅ **Launch-pricing urgency band**: "$49 · ~~$99~~ · rises to $99 on 1 Sep 2026 · first 500 customers only" above the pricing cards.
+- ✅ **Enterprise tier** (3rd pricing card): "Let's talk" with `mailto:` Book-a-call (20+ systems, white-label PDFs, priority updates, custom FRIA workshop, Slack channel, annual 30% off).
+- ✅ **Exit-intent modal** on `/results/:id` for unpaid sessions only — top-edge `mouseout` detection, session-deduped via sessionStorage, recaps value props + routes to checkout. Suppressed on paid.
+- ✅ 21/21 backend tests pass (4 new `/api/stats` tests + 17 regression). Zero frontend issues from testing agent.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret

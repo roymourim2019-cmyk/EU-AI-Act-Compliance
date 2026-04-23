@@ -41,6 +41,8 @@ export default function useSeo({ title, description, canonical, ogImage, keyword
       set('meta[property="og:image"]', "content", ogImage);
       set('meta[name="twitter:image"]', "content", ogImage);
     }
-    if (keywords) set('meta[name="keywords"]', "content", keywords);
+    // Always set (or reset) keywords per route so stale values don't leak
+    // between pages.
+    set('meta[name="keywords"]', "content", keywords || "EU AI Act, compliance, AI risk");
   }, [title, description, canonical, ogImage, keywords]);
 }
