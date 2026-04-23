@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { RISK_META } from "@/lib/quiz-data";
 import { Download, Copy, FileText, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -124,6 +125,7 @@ export default function ReportPage() {
     );
 
     pdf.save(`EU-AI-Act-Report-${report.session_id.slice(0, 8)}.pdf`);
+    track("pdf_downloaded", { risk_level: report.risk_level, score: report.score });
   };
 
   const downloadFRIA = () => {

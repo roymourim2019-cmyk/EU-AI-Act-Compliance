@@ -1,7 +1,10 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 import os
 import logging
 from pathlib import Path
@@ -18,7 +21,20 @@ mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
 
+
+def _client_ip(request):
+    """Extract the real client IP behind the Kubernetes/nginx ingress."""
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return get_remote_address(request)
+
+
+limiter = Limiter(key_func=_client_ip)
+
 app = FastAPI(title="EU AI Act Compliance Scorecard API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 api_router = APIRouter(prefix="/api")
 
 
@@ -246,7 +262,8 @@ async def root():
 
 
 @api_router.post("/quiz/submit", response_model=QuizResult)
-async def submit_quiz(submission: QuizSubmission):
+@limiter.limit("10/minute")
+async def submit_quiz(request: Request, submission: QuizSubmission):
     classification = classify_and_score(submission.answers)
     risk_level = classification["risk_level"]
     session_id = str(uuid.uuid4())
@@ -306,7 +323,8 @@ async def mock_checkout(req: CheckoutRequest):
 
 
 @api_router.post("/subscribe")
-async def subscribe(req: SubscribeRequest):
+@limiter.limit("5/minute")
+async def subscribe(request: Request, req: SubscribeRequest):
     await db.subscriptions.update_one(
         {"email": req.email},
         {"$set": {"email": req.email, "subscribed_at": datetime.now(timezone.utc).isoformat()}},

@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { RISK_META } from "@/lib/quiz-data";
-import { Lock, Share2, ArrowRight, RotateCcw } from "lucide-react";
+import { Lock, Share2, ArrowRight, RotateCcw, Copy } from "lucide-react";
 import { toast } from "sonner";
 import MockCheckoutModal from "@/components/MockCheckoutModal";
 
@@ -15,7 +16,10 @@ export default function ResultsPage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
-    api.get(`/quiz/result/${sessionId}`).then(({ data }) => setResult(data)).catch(() => {
+    api.get(`/quiz/result/${sessionId}`).then(({ data }) => {
+      setResult(data);
+      track("results_viewed", { risk_level: data.risk_level, score: data.score });
+    }).catch(() => {
       toast.error("Couldn't load your results.");
       navigate("/");
     });
@@ -34,6 +38,7 @@ export default function ResultsPage() {
   const share = async () => {
     const url = window.location.origin;
     const text = `My AI risk under the EU AI Act: ${meta.label} (${result.score}/100). Try the free scorecard at ${url}`;
+    track("share_clicked", { risk_level: result.risk_level });
     try {
       if (navigator.share) {
         await navigator.share({ title: "My AI Act Risk", text, url });
@@ -44,6 +49,12 @@ export default function ResultsPage() {
     } catch (err) {
       // ignore
     }
+  };
+
+  const copyResultLink = async () => {
+    const link = `${window.location.origin}/results/${sessionId}`;
+    await navigator.clipboard.writeText(link);
+    toast.success("Result link copied — keep it safe to access your report later.");
   };
 
   const onPaid = () => {
@@ -81,7 +92,7 @@ export default function ResultsPage() {
 
               <div className="mt-10 flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => setCheckoutOpen(true)}
+                  onClick={() => { track("unlock_clicked", { risk_level: result.risk_level, placement: "hero" }); setCheckoutOpen(true); }}
                   className="inline-flex items-center gap-2 h-12 px-6 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
                   data-testid="unlock-report-btn"
                 >
@@ -100,6 +111,23 @@ export default function ResultsPage() {
                   data-testid="retake-btn"
                 >
                   <RotateCcw className="h-4 w-4" /> Retake
+                </button>
+              </div>
+
+              {/* Permanent link — bookmarkable */}
+              <div className="mt-8 border border-foreground/15 p-4 flex items-center gap-4 max-w-2xl" data-testid="result-link-box">
+                <div className="flex-1 min-w-0">
+                  <div className="label-eyebrow text-foreground/60 mb-1">Bookmark this result</div>
+                  <div className="mono text-xs text-foreground/80 truncate" data-testid="result-link-url">
+                    {window.location.href}
+                  </div>
+                </div>
+                <button
+                  onClick={copyResultLink}
+                  className="shrink-0 inline-flex items-center gap-2 h-10 px-4 border border-foreground/20 hover:bg-foreground hover:text-background label-eyebrow"
+                  data-testid="copy-result-link-btn"
+                >
+                  <Copy className="h-3.5 w-3.5" /> Copy
                 </button>
               </div>
             </div>
@@ -128,7 +156,7 @@ export default function ResultsPage() {
               <div className="px-5 py-4 border-t border-foreground/20 bg-foreground/[0.03] flex items-center justify-between">
                 <span className="label-eyebrow text-foreground/60">+{Math.max(0, result.obligations.length - 3)} more · FRIA · badge</span>
                 <button
-                  onClick={() => setCheckoutOpen(true)}
+                  onClick={() => { track("unlock_clicked", { risk_level: result.risk_level, placement: "sidebar" }); setCheckoutOpen(true); }}
                   className="inline-flex items-center gap-1 label-eyebrow hover:text-[#0020C2]"
                   data-testid="unlock-inline-btn"
                 >

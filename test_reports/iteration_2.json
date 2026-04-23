@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 2 validation of three additions: (1) slowapi rate limits, (2) PostHog event tracking, (3) Footer retrieve-report form + Results bookmark box. Backend 21/21 pytest pass including 10/min limit on /api/quiz/submit (11th+ -> 429), 5/min on /api/subscribe (6th+ -> 429), allowed/disallowed CORS origins, and full regression (classification tiers, persistence, DPDP, 402 gating, mock checkout, full report w/ FRIA + badge SVG, subscribe). Frontend end-to-end flow captures all 8 required PostHog events (quiz_started, quiz_completed, results_viewed, share_clicked, unlock_clicked, checkout_completed, pdf_downloaded, newsletter_subscribed); result-link-box + copy-result-link-btn render on Results with correct URL; Footer retrieve-form accepts session_id and navigates to /results/<id>.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_rate_limits.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Low) quiz_started and results_viewed fire twice in React StrictMode (useEffect runs twice in dev). Consider a useRef flag to fire-once so PostHog production event counts aren't inflated.",
+    "(Info) K8s ingress overrides Access-Control-Allow-Origin to '*' on the public preview URL, masking the backend's locked-down CORS_ORIGINS. Backend code is correct (verified by hitting http://localhost:8001 directly). If strict CORS is a product requirement at the edge, it must be configured at the ingress/nginx layer, not in FastAPI. Document this if shipping to production.",
+    "(Info) The 10/min /api/quiz/submit rate limit is tight — backend regression suite had to spoof unique X-Forwarded-For per call to avoid self-DoS. Real users behind shared NAT/corporate proxies may also hit this. Consider 20/min or IP+session-id combined key."
+  ],
+  "critical_code_review_comments": [
+    "analytics.js safe() swallows all errors silently (bare `catch {}`) — useful in prod but hides bugs during dev; log via console.debug at least.",
+    "slowapi Limiter(key_func=_client_ip) uses first value of X-Forwarded-For which is trivially spoofable from the public internet (anyone can set XFF). Acceptable behind a trusted ingress that strips/overwrites XFF, but if the ingress passes through arbitrary XFF, the rate limit is bypass-able. Verify ingress behaviour or fall back to get_remote_address when XFF is not from a trusted proxy.",
+    "QuizPage useEffect dependency array is [] — track('quiz_started') will double-fire in StrictMode. Same for ResultsPage track('results_viewed') inside the .then chain. Guard with a ref if event dedup matters.",
+    "ResultsPage result-link-url uses window.location.href directly — fine, but note it also includes any trailing slash / query; `${origin}/results/${sessionId}` would be more canonical.",
+    "Footer onRetrieve does NO validation on the pasted string — any garbage navigates to /results/<junk> and relies on ResultsPage catch to toast+redirect. Consider a UUID v4 regex guard for better UX."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_rate_limits.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "None required. /app/memory/test_credentials.md not present (N/A — public app, no auth).",
+  "seed_data_creation": "Each test creates its own TEST_* emails + fresh quiz sessions; no persistent seeds.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression lives at /app/backend/tests/test_backend.py (uses IP-rotating session so 10/min quiz limit doesn't self-DoS). Rate-limit + CORS tests at /app/backend/tests/test_rate_limits.py. CORS must be tested against http://localhost:8001 because the k8s ingress rewrites ACAO to '*' on the public URL. For PostHog FE testing, install an init script that defines window.posthog via Object.defineProperty setter and wraps .capture so subsequent assignments by the real SDK are still intercepted — replacing window.posthog before page load is insufficient because the SDK overwrites it. Event list captured during the E2E flow: ['$pageview','quiz_started','quiz_started','$$heatmap','quiz_completed','results_viewed','results_viewed','share_clicked','$web_vitals','unlock_clicked','$$heatmap','checkout_completed','pdf_downloaded','$$heatmap','newsletter_subscribed']."
+}

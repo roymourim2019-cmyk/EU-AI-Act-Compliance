@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { toast } from "sonner";
 import { Lock } from "lucide-react";
 
@@ -20,6 +21,7 @@ export default function MockCheckoutModal({ open, onClose, sessionId, onSuccess 
     try {
       await new Promise((r) => setTimeout(r, 900));
       const { data } = await api.post("/checkout/mock", { session_id: sessionId, email: email || null });
+      track("checkout_completed", { amount_usd: 49, payment_id: data.payment_id });
       toast.success(`Payment succeeded · ${data.payment_id}`);
       onSuccess?.(data);
     } catch (e) {

@@ -1,11 +1,16 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { toast } from "sonner";
 import Countdown from "@/components/Countdown";
+import { ArrowRight } from "lucide-react";
 
 export default function Footer() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [retrieveId, setRetrieveId] = useState("");
 
   const onSubscribe = async (e) => {
     e.preventDefault();
@@ -13,13 +18,27 @@ export default function Footer() {
     setLoading(true);
     try {
       await api.post("/subscribe", { email });
+      track("newsletter_subscribed", {});
       toast.success("Subscribed. We'll send updates as the Aug 2026 deadline approaches.");
       setEmail("");
     } catch (err) {
-      toast.error("Something went wrong. Try again.");
+      if (err?.response?.status === 429) {
+        toast.error("Too many attempts. Try again in a minute.");
+      } else {
+        toast.error("Something went wrong. Try again.");
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const onRetrieve = (e) => {
+    e.preventDefault();
+    const id = retrieveId.trim();
+    if (!id) return;
+    // session_id is a UUID v4 — route to results page; report page redirects
+    // back to results if unpaid.
+    navigate(`/results/${id}`);
   };
 
   return (
@@ -56,6 +75,29 @@ export default function Footer() {
               data-testid="subscribe-btn"
             >
               {loading ? "Sending…" : "Subscribe"}
+            </button>
+          </form>
+
+          <div className="mt-10 label-eyebrow text-background/60 mb-3">Retrieve report</div>
+          <p className="text-background/70 leading-relaxed mb-4 text-sm">
+            Paste your session ID to jump back to your results or paid report. Your link is permanent.
+          </p>
+          <form onSubmit={onRetrieve} className="flex flex-col sm:flex-row gap-0 border border-background/30" data-testid="retrieve-form">
+            <input
+              type="text"
+              required
+              placeholder="paste session id"
+              value={retrieveId}
+              onChange={(e) => setRetrieveId(e.target.value)}
+              className="flex-1 bg-transparent px-4 h-12 text-background placeholder:text-background/40 outline-none border-b sm:border-b-0 sm:border-r border-background/30 mono text-xs"
+              data-testid="retrieve-input"
+            />
+            <button
+              type="submit"
+              className="h-12 px-5 bg-background text-foreground label-eyebrow hover:bg-[#0020C2] hover:text-white transition-all duration-200 inline-flex items-center gap-2"
+              data-testid="retrieve-btn"
+            >
+              Retrieve <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </form>
         </div>

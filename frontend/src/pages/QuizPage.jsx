@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { QUESTIONS, DPDP_QUESTIONS } from "@/lib/quiz-data";
 import { api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +15,10 @@ export default function QuizPage() {
   const [dpdp, setDpdp] = useState(false);
   const [dpdpAnswers, setDpdpAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    track("quiz_started", { total_questions: QUESTIONS.length });
+  }, []);
 
   const totalQuestions = QUESTIONS.length + (dpdp ? DPDP_QUESTIONS.length : 0);
   const allQuestions = useMemo(
@@ -49,6 +54,11 @@ export default function QuizPage() {
           : null,
       };
       const { data } = await api.post("/quiz/submit", payload);
+      track("quiz_completed", {
+        risk_level: data.risk_level,
+        score: data.score,
+        dpdp_enabled: dpdp,
+      });
       navigate(`/results/${data.session_id}`);
     } catch (e) {
       toast.error("Failed to submit. Please try again.");

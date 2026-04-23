@@ -1,5 +1,6 @@
 """Backend API tests for EU AI Act Compliance Scorecard"""
 import os
+import uuid
 import pytest
 import requests
 from pathlib import Path
@@ -13,9 +14,19 @@ BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
 API = f"{BASE_URL}/api"
 
 
+class _IPRotatingSession(requests.Session):
+    """Rotate X-Forwarded-For per request so rate limits (per-IP) don't block regression."""
+    def request(self, method, url, **kwargs):
+        headers = kwargs.pop("headers", {}) or {}
+        if "X-Forwarded-For" not in headers:
+            headers["X-Forwarded-For"] = f"172.16.{(uuid.uuid4().int >> 8) % 250 + 1}.{uuid.uuid4().int % 250 + 1}"
+        kwargs["headers"] = headers
+        return super().request(method, url, **kwargs)
+
+
 @pytest.fixture
 def s():
-    sess = requests.Session()
+    sess = _IPRotatingSession()
     sess.headers.update({"Content-Type": "application/json"})
     return sess
 
