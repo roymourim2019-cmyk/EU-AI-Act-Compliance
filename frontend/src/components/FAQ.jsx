@@ -43,7 +43,7 @@ export default function FAQ() {
             Questions, answered.
           </h2>
           <p className="mt-6 text-foreground/70 leading-relaxed">
-            If we didn&apos;t cover it, write to <span className="mono text-foreground">hello@aiact-scorecard.eu</span>.
+            If we didn&apos;t cover it, write to <span className="mono text-foreground">hello@roys-enterprise.com</span>.
           </p>
         </div>
         <div className="md:col-span-7 md:col-start-6">

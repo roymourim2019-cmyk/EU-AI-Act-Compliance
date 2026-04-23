@@ -26,12 +26,13 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 6)
-- ✅ All iter 1–5 features
-- ✅ **Invite your legal counsel**: One-click `mailto:` button on both `/report/:id` (sidebar) and `/compare` (header) that opens the user's default mail client with a pre-filled subject and exec-summary body (risk tier, score, art refs, deadline, max penalty, permanent session link(s), short ask to GC). Zero backend, zero integration — pure referral loop.
-- ✅ Shared `InviteCounselButton` component in `/app/frontend/src/components/InviteCounselButton.jsx` with `fullWidth` and `variant` props for layout flexibility.
-- ✅ PostHog event `counsel_invited` wired with `{surface: "report"|"compare", ...}` context for funnel attribution.
-- ✅ Playwright verified: both buttons render, `mailto:` navigation is detected, toast confirms the action.
+## Implemented (2026-02-23 · iter 7)
+- ✅ **Rebranded as "EU AI Act Compliance"** by **Roy's Enterprise**
+- ✅ Custom Swiss/brutalist logo: black "AI·C" monogram block + three risk-traffic-light dots (red/yellow/green). Theme-aware. `/app/frontend/src/components/Logo.jsx`
+- ✅ Footer: `© 2026 Roy's Enterprise · EU AI Act Compliance · All rights reserved`
+- ✅ `<title>` and OG meta updated (HTML head) — SEO refreshed
+- ✅ FAQ contact email → `hello@roys-enterprise.com`
+- ✅ **Procurement template** — new "Supplier questionnaire (CSV)" button on paid Report page. Generates a 22-row vendor questionnaire mapped to Art 9–15, Art 17, Art 27, Art 49, Art 50, Art 53, Art 55 + commercial terms. Columns: Article | Requirement | Question | Vendor Response | Evidence | Status. Opens cleanly in Excel/Sheets. PostHog event `procurement_downloaded` wired.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret

@@ -115,11 +115,13 @@ export default function Footer() {
 
       <div className="border-t border-background/20">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 label-eyebrow text-background/60">
-          <div>© 2026 AI Act Scorecard · Non-binding diagnostic</div>
+          <div data-testid="footer-copyright">
+            © 2026 Roy&rsquo;s Enterprise · EU AI Act Compliance · All rights reserved
+          </div>
           <div className="flex gap-6">
             <span>Reg (EU) 2024/1689</span>
             <span>DPDP Act 2023</span>
-            <span>Made for compliance teams</span>
+            <span>Non-binding diagnostic</span>
           </div>
         </div>
       </div>

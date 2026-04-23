@@ -5,10 +5,11 @@ import Footer from "@/components/Footer";
 import { api } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import { RISK_META } from "@/lib/quiz-data";
-import { Download, Copy, FileText, ShieldCheck } from "lucide-react";
+import { Download, Copy, FileText, ShieldCheck, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import InviteCounselButton from "@/components/InviteCounselButton";
+import { PROCUREMENT_QUESTIONS } from "@/lib/procurement";
 
 export default function ReportPage() {
   const { sessionId } = useParams();
@@ -152,6 +153,23 @@ export default function ReportPage() {
     URL.revokeObjectURL(url);
   };
 
+  const downloadProcurement = () => {
+    const header = ["Article", "Requirement", "Question", "Vendor Response", "Evidence / Attachment", "Status"];
+    const rows = [header, ...PROCUREMENT_QUESTIONS.map((q) => [q.article, q.requirement, q.question, "", "", ""])];
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `AI-Supplier-Questionnaire-${report.session_id.slice(0, 8)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    track("procurement_downloaded", { risk_level: report.risk_level });
+    toast.success("Supplier questionnaire downloaded.");
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col" data-testid="report-page">
       <Navbar />
@@ -199,6 +217,13 @@ export default function ReportPage() {
                   <FileText className="h-4 w-4" /> FRIA starter (CSV)
                 </button>
               )}
+              <button
+                onClick={downloadProcurement}
+                className="inline-flex items-center gap-2 w-full justify-center h-11 border border-foreground/20 hover:bg-foreground hover:text-background label-eyebrow transition-all"
+                data-testid="download-procurement-btn"
+              >
+                <Building2 className="h-4 w-4" /> Supplier questionnaire (CSV)
+              </button>
               {(() => {
                 const subject = `EU AI Act review needed — ${meta.label} (score ${report.score}/100)`;
                 const link = `${window.location.origin}/report/${report.session_id}`;
