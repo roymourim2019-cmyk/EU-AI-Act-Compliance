@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List, Dict, Optional
 import uuid
 from datetime import datetime, timezone
+import razorpay
 
 
 ROOT_DIR = Path(__file__).parent
@@ -36,6 +37,9 @@ app = FastAPI(title="EU AI Act Compliance Scorecard API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 api_router = APIRouter(prefix="/api")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # ---------- Models ----------
@@ -77,6 +81,31 @@ class CheckoutRequest(BaseModel):
     session_id: str
     email: Optional[str] = None
     tier: str = "pro"  # "starter" | "pro" | "bundle"
+
+
+class RazorpayOrderRequest(BaseModel):
+    session_id: str
+    tier: str  # starter | pro | bundle
+    email: Optional[str] = None
+
+
+class RazorpayVerifyRequest(BaseModel):
+    session_id: str
+    tier: str
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+    email: Optional[str] = None
+
+
+# ---------- Razorpay client (optional — falls back to mock when unset) ----------
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID") or ""
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET") or ""
+RAZORPAY_ENABLED = bool(RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET)
+razorpay_client = (
+    razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+    if RAZORPAY_ENABLED else None
+)
 
 
 TIER_METADATA = {
@@ -567,6 +596,152 @@ async def mock_checkout(req: CheckoutRequest):
     return {"status": "succeeded", "payment_id": payment_id, "amount": pricing["amount_usd"], "tier": tier}
 
 
+# ---------- Razorpay: live payment flow ----------
+@api_router.get("/razorpay/config")
+async def razorpay_config():
+    """Public config the frontend needs to open Checkout.js. Never returns secret."""
+    return {
+        "enabled": RAZORPAY_ENABLED,
+        "key_id": RAZORPAY_KEY_ID if RAZORPAY_ENABLED else None,
+        # Charge currency is INR because the test account is India-based.
+        # USD prices are converted using CURRENCY_RATES at order time.
+        "charge_currency": "INR",
+    }
+
+
+@api_router.post("/razorpay/order")
+@limiter.limit("10/minute")
+async def razorpay_order(request: Request, req: RazorpayOrderRequest):
+    """Create a Razorpay order pre-bound to a quiz session + tier.
+
+    We source the authoritative USD price from TIER_PRICING (server-side —
+    clients can't tamper with it) and convert to INR paise for the order.
+    """
+    if not RAZORPAY_ENABLED:
+        raise HTTPException(status_code=503, detail="Razorpay not configured")
+    doc = await db.quiz_sessions.find_one({"session_id": req.session_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if req.tier not in TIER_PRICING:
+        raise HTTPException(status_code=400, detail=f"Unknown tier '{req.tier}'")
+
+    tier_info = TIER_PRICING[req.tier]
+    amount_usd = int(tier_info["amount_usd"])
+    # Convert to INR paise. Razorpay expects integer paise.
+    inr_rate = CURRENCY_RATES["INR"]["rate"]
+    amount_inr = _round_price(amount_usd * inr_rate, "INR")
+    amount_paise = int(amount_inr * 100)
+
+    # receipt must be <= 40 chars per Razorpay spec
+    receipt = f"aiact_{req.tier[:3]}_{req.session_id[:8]}"[:40]
+    try:
+        order = razorpay_client.order.create({
+            "amount": amount_paise,
+            "currency": "INR",
+            "receipt": receipt,
+            "payment_capture": 1,
+            "notes": {
+                "session_id": req.session_id,
+                "tier": req.tier,
+                "amount_usd": str(amount_usd),
+            },
+        })
+    except Exception as e:
+        logger.exception("Razorpay order creation failed")
+        raise HTTPException(status_code=502, detail=f"Razorpay error: {e}")
+
+    await db.razorpay_orders.insert_one({
+        "order_id": order["id"],
+        "session_id": req.session_id,
+        "tier": req.tier,
+        "amount_paise": amount_paise,
+        "amount_usd": amount_usd,
+        "currency": "INR",
+        "status": "created",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "email": req.email or doc.get("email"),
+    })
+
+    return {
+        "order_id": order["id"],
+        "amount_paise": amount_paise,
+        "amount_inr": amount_inr,
+        "amount_usd": amount_usd,
+        "currency": "INR",
+        "key_id": RAZORPAY_KEY_ID,
+        "tier": req.tier,
+        "tier_label": tier_info["label"],
+        "session_id": req.session_id,
+    }
+
+
+@api_router.post("/razorpay/verify")
+@limiter.limit("10/minute")
+async def razorpay_verify(request: Request, req: RazorpayVerifyRequest):
+    """Verify Razorpay's HMAC signature, then mark the session paid.
+
+    Signature = HMAC-SHA256(order_id|payment_id, key_secret). Razorpay's
+    SDK exposes this as client.utility.verify_payment_signature. Any
+    AttributeError/SignatureVerificationError → 400.
+    """
+    if not RAZORPAY_ENABLED:
+        raise HTTPException(status_code=503, detail="Razorpay not configured")
+    if req.tier not in TIER_PRICING:
+        raise HTTPException(status_code=400, detail="Unknown tier")
+
+    doc = await db.quiz_sessions.find_one({"session_id": req.session_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    try:
+        razorpay_client.utility.verify_payment_signature({
+            "razorpay_order_id": req.razorpay_order_id,
+            "razorpay_payment_id": req.razorpay_payment_id,
+            "razorpay_signature": req.razorpay_signature,
+        })
+    except Exception as e:
+        logger.warning(f"Razorpay signature verification failed: {e}")
+        raise HTTPException(status_code=400, detail="Signature verification failed")
+
+    pricing = TIER_PRICING[req.tier]
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.quiz_sessions.update_one(
+        {"session_id": req.session_id},
+        {"$set": {
+            "paid": True,
+            "payment_id": req.razorpay_payment_id,
+            "razorpay_order_id": req.razorpay_order_id,
+            "tier": req.tier,
+            "amount_usd": pricing["amount_usd"],
+            "credits_remaining": pricing["credits"],
+            "paid_at": now,
+            "email": req.email or doc.get("email"),
+            "payment_provider": "razorpay",
+        }},
+    )
+    await db.razorpay_orders.update_one(
+        {"order_id": req.razorpay_order_id},
+        {"$set": {"status": "paid", "payment_id": req.razorpay_payment_id, "paid_at": now}},
+    )
+    await db.payments.insert_one({
+        "payment_id": req.razorpay_payment_id,
+        "session_id": req.session_id,
+        "tier": req.tier,
+        "amount_usd": pricing["amount_usd"],
+        "status": "succeeded",
+        "provider": "razorpay",
+        "razorpay_order_id": req.razorpay_order_id,
+        "created_at": now,
+    })
+    return {
+        "status": "succeeded",
+        "payment_id": req.razorpay_payment_id,
+        "tier": req.tier,
+        "amount_usd": pricing["amount_usd"],
+    }
+
+
 @api_router.post("/subscribe")
 @limiter.limit("5/minute")
 async def subscribe(request: Request, req: SubscribeRequest):
@@ -753,9 +928,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 @app.on_event("shutdown")

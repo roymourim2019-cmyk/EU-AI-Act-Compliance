@@ -58,9 +58,31 @@ Frontend
 Testing
 - ✅ `/app/test_reports/iteration_9.json` — 15/15 new backend tests pass, 22/22 frontend assertions pass, E2E Bundle→jurisdiction rendering verified end-to-end.
 
+## Implemented (2026-04-23 · iter 10 — Live Razorpay + P1 items)
+Backend
+- ✅ `razorpay==2.0.1` added to requirements. `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` in backend/.env.
+- ✅ `GET /api/razorpay/config` — public config (enabled + key_id + charge_currency), never leaks secret.
+- ✅ `POST /api/razorpay/order` — server-side price lookup from `TIER_PRICING` (no client tampering), USD→INR paise conversion using `CURRENCY_RATES`, creates order via SDK, persists in `razorpay_orders`.
+- ✅ `POST /api/razorpay/verify` — HMAC-SHA256 signature verification via `client.utility.verify_payment_signature`. On success marks `paid=true`, sets `payment_provider=razorpay`, inserts `payments` doc.
+- ✅ Mock `/api/checkout/mock` retained as automatic fallback when Razorpay env vars are unset.
+- ✅ `POST /api/partners/apply` — persisted partner applications with Pydantic validation, 3/min rate-limit, upsert-by-(email, newsletter).
+
+Frontend
+- ✅ `MockCheckoutModal.jsx` — lazy-loads `checkout.razorpay.com/v1/checkout.js`, fetches `/razorpay/config` on open, uses real flow when enabled. Razorpay handler posts to `/razorpay/verify` with payment_id + order_id + signature. Mock flow kicks in if config returns `enabled:false`. Tracks `checkout_completed` with `provider` field.
+- ✅ `PartnersPage.jsx` — POSTs to `/api/partners/apply` with error toast for 422/429/network; mailto fallback removed.
+- ✅ `sitemap.xml` — added `/updates`, `/changelog`, `/trust`, `/partners` entries.
+
+Testing
+- ✅ End-to-end Razorpay flow verified: order creation ($199 Pro → ₹16,500 → 1,650,000 paise), bad signature → 400, valid HMAC signature → 200, `/report/{id}` unlocks with `payment_provider: razorpay`.
+- ✅ Partner application flow: valid → 200 + application_id; resubmit idempotent; invalid email → 422.
+- ✅ Frontend smoke: checkout modal shows Razorpay badge + "Pay $199 · Pro · via Razorpay" button when backend keys are set.
+
 ## Next Actions / Backlog
-- **P0**: Wire real Razorpay when user provides Test Key ID + Secret (deferred by user — mock checkout stays in place)
-- **P1**: Persist partner applications server-side (`/api/partners/apply`) instead of mailto-only
+- **P0**: None — all critical features shipped. Collect first real payment in Razorpay Test mode to smoke the full Checkout.js popup.
+- **P1**: Switch Razorpay to Live keys once user's KYC is verified (just swap env vars — no code change).
+- **P1**: Admin dashboard `/admin` for subscriptions + partner_applications + payments with CSV export (token-gated via `ADMIN_TOKEN`).
+- **P1**: Email delivery (Resend) on report unlock — attach PDF.
+- **P2**: Token-gated `POST /api/updates` so regulatory bulletins can be posted without redeploy.
 - **P1**: Add rate limiting to `/api/subscribe` and `/api/quiz/submit` (anti-abuse)
 - **P1**: Tighten CORS in production (`allow_origins=*` + credentials mismatch)
 - **P2**: Wire PostHog events (quiz-start, quiz-complete, unlock-click, checkout-complete) for conversion funnel analytics
