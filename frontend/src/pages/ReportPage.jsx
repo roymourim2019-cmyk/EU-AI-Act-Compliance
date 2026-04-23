@@ -8,6 +8,7 @@ import { RISK_META } from "@/lib/quiz-data";
 import { Download, Copy, FileText, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import InviteCounselButton from "@/components/InviteCounselButton";
 
 export default function ReportPage() {
   const { sessionId } = useParams();
@@ -198,6 +199,37 @@ export default function ReportPage() {
                   <FileText className="h-4 w-4" /> FRIA starter (CSV)
                 </button>
               )}
+              {(() => {
+                const subject = `EU AI Act review needed — ${meta.label} (score ${report.score}/100)`;
+                const link = `${window.location.origin}/report/${report.session_id}`;
+                const body = [
+                  "Hi —",
+                  "",
+                  `I ran our AI system through the EU AI Act 2026 Compliance Scorecard and I'd like your review before we act on any of the obligations listed.`,
+                  "",
+                  `Risk tier:     ${meta.label}`,
+                  `Score:         ${report.score}/100`,
+                  `References:    ${(report.art_references || []).join(" · ")}`,
+                  `Deadline:      2 August 2026 (high-risk) / per-tier details in the report`,
+                  `Max penalty:   €35M or 7% of global turnover`,
+                  "",
+                  `Full report (lifetime access, no login):`,
+                  link,
+                  "",
+                  `Could you confirm the obligations that apply, and flag anything you want us to reprioritise?`,
+                  "",
+                  "Thanks.",
+                ].join("\r\n");
+                return (
+                  <InviteCounselButton
+                    subject={subject}
+                    body={body}
+                    context={{ surface: "report", risk_level: report.risk_level, score: report.score }}
+                    testId="invite-counsel-report-btn"
+                    fullWidth
+                  />
+                );
+              })()}
               <div className="label-eyebrow text-foreground/50 text-center pt-2">Lifetime access · no subscription</div>
             </div>
           </div>

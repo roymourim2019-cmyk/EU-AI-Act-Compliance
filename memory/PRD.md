@@ -26,11 +26,12 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 5)
-- ✅ All iter 1–4 features
-- ✅ **Export comparison as PDF**: New "Export comparison as PDF" button on `/compare` page generates a landscape-A4 branded PDF using the existing jsPDF pipeline. Cover header, scores row, references, shared penalty, obligations matrix with YES cells filled black + UNIQUE yellow pill on single-system obligations, regulatory timeline, disclaimer. Auto-paginates; filename `EU-AI-Act-Comparison-<sid1>-<sid2>[-<sid3>].pdf`.
-- ✅ PostHog event `comparison_pdf_downloaded` wired.
-- ✅ Playwright verified download fires with correct filename; no lint issues.
+## Implemented (2026-02-23 · iter 6)
+- ✅ All iter 1–5 features
+- ✅ **Invite your legal counsel**: One-click `mailto:` button on both `/report/:id` (sidebar) and `/compare` (header) that opens the user's default mail client with a pre-filled subject and exec-summary body (risk tier, score, art refs, deadline, max penalty, permanent session link(s), short ask to GC). Zero backend, zero integration — pure referral loop.
+- ✅ Shared `InviteCounselButton` component in `/app/frontend/src/components/InviteCounselButton.jsx` with `fullWidth` and `variant` props for layout flexibility.
+- ✅ PostHog event `counsel_invited` wired with `{surface: "report"|"compare", ...}` context for funnel attribution.
+- ✅ Playwright verified: both buttons render, `mailto:` navigation is detected, toast confirms the action.
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret

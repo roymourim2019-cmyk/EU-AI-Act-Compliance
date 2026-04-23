@@ -8,6 +8,7 @@ import { track } from "@/lib/analytics";
 import { ArrowLeft, ExternalLink, Download } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import InviteCounselButton from "@/components/InviteCounselButton";
 
 function hexToRgb(hex) {
   const m = hex.replace("#", "").match(/.{1,2}/g);
@@ -327,6 +328,40 @@ export default function ComparePage() {
               >
                 <Download className="h-4 w-4" /> Export comparison as PDF
               </button>
+              {(() => {
+                const summary = reports
+                  .map((r, i) => {
+                    const meta = RISK_META[r.risk_level] || RISK_META.minimal;
+                    const url = `${window.location.origin}/report/${r.session_id}`;
+                    return `  ${i + 1}. ${meta.label} — ${r.score}/100 — ${url}`;
+                  })
+                  .join("\r\n");
+                const subject = `EU AI Act portfolio review — ${reports.length} systems`;
+                const body = [
+                  "Hi —",
+                  "",
+                  `I pulled a side-by-side comparison of ${reports.length} of our AI systems under the EU AI Act 2026 and I'd like your review before we act on any of the obligations:`,
+                  "",
+                  summary,
+                  "",
+                  `Relevant deadlines start 2 Aug 2026 for high-risk systems; max penalty is €35M or 7% of global turnover.`,
+                  "",
+                  `Portfolio comparison (lifetime access, no login):`,
+                  window.location.href,
+                  "",
+                  `Could you confirm the obligations that apply per system, and flag anything we should reprioritise?`,
+                  "",
+                  "Thanks.",
+                ].join("\r\n");
+                return (
+                  <InviteCounselButton
+                    subject={subject}
+                    body={body}
+                    context={{ surface: "compare", count: reports.length }}
+                    testId="invite-counsel-compare-btn"
+                  />
+                );
+              })()}
               <span className="label-eyebrow text-foreground/50">
                 Landscape A4 · ready for GC handoff
               </span>
