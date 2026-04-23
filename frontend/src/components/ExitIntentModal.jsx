@@ -48,7 +48,7 @@ export default function ExitIntentModal({ onUpgrade, enabled = true }) {
             { icon: BadgeCheck, t: "Compliance badge (SVG + embed code)" },
             { icon: Building2, t: "Supplier questionnaire (CSV) for your vendors" },
             { icon: GitCompare, t: "Portfolio comparison & PDF export" },
-            { icon: Lock, t: "Lifetime access — $49 one-time, no subscription" },
+            { icon: Lock, t: "Lifetime access — one-time payment, no subscription" },
           ].map((x, i) => (
             <div key={i} className="flex items-start gap-3 border-b border-foreground/10 pb-2">
               <x.icon className="h-4 w-4 mt-0.5 text-[#0020C2]" />
@@ -60,9 +60,9 @@ export default function ExitIntentModal({ onUpgrade, enabled = true }) {
             className="mt-4 w-full inline-flex items-center justify-center gap-2 h-12 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
             data-testid="exit-intent-cta"
           >
-            Pick a tier · from $29 <ArrowRight className="h-4 w-4" />
+            Pick a tier · from $79 <ArrowRight className="h-4 w-4" />
           </button>
-          <p className="label-eyebrow text-foreground/50 text-center">Early-access · Starter $29 · Pro $79 · Bundle $149</p>
+          <p className="label-eyebrow text-foreground/50 text-center">Early-access · Starter $79 · Pro $199 · Bundle $399</p>
         </div>
       </DialogContent>
     </Dialog>

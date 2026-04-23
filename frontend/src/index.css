@@ -165,3 +165,10 @@ code,
         display: contents !important;
     }
 }
+
+/* Hide any platform-injected badges */
+#emergent-badge,
+[id^="emergent-"],
+[class*="emergent-badge"] {
+    display: none !important;
+}

@@ -49,9 +49,9 @@ def _new_session(s, overrides=None, email=None):
 
 # ---------- Tier pricing correctness ----------
 @pytest.mark.parametrize("tier,amount", [
-    ("starter", 29),
-    ("pro", 79),
-    ("bundle", 149),
+    ("starter", 79),
+    ("pro", 199),
+    ("bundle", 399),
 ])
 def test_checkout_tier_amount(s, tier, amount):
     sid = _new_session(s, {"q3": "yes"}, email=f"TEST_{tier}@example.com")
@@ -70,7 +70,7 @@ def test_checkout_invalid_tier_defaults_to_pro(s):
     assert r.status_code == 200, r.text
     data = r.json()
     assert data["tier"] == "pro"
-    assert data["amount"] == 79
+    assert data["amount"] == 199
 
 
 def test_checkout_no_tier_defaults_to_pro(s):
@@ -78,14 +78,14 @@ def test_checkout_no_tier_defaults_to_pro(s):
     r = s.post(f"{API}/checkout/mock", json={"session_id": sid})
     assert r.status_code == 200, r.text
     assert r.json()["tier"] == "pro"
-    assert r.json()["amount"] == 79
+    assert r.json()["amount"] == 199
 
 
 # ---------- Report includes tier+amount after payment ----------
 @pytest.mark.parametrize("tier,amount,credits", [
-    ("starter", 29, 1),
-    ("pro", 79, 1),
-    ("bundle", 149, 5),
+    ("starter", 79, 1),
+    ("pro", 199, 1),
+    ("bundle", 399, 5),
 ])
 def test_report_contains_tier_fields(s, tier, amount, credits):
     sid = _new_session(s, {"q3": "yes"}, email=f"TEST_rep_{tier}@example.com")

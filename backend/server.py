@@ -75,9 +75,9 @@ class CheckoutRequest(BaseModel):
 
 
 TIER_PRICING = {
-    "starter": {"amount_usd": 29, "credits": 1, "label": "Starter"},
-    "pro": {"amount_usd": 79, "credits": 1, "label": "Pro"},
-    "bundle": {"amount_usd": 149, "credits": 5, "label": "Bundle"},
+    "starter": {"amount_usd": 79, "credits": 1, "label": "Starter"},
+    "pro": {"amount_usd": 199, "credits": 1, "label": "Pro"},
+    "bundle": {"amount_usd": 399, "credits": 5, "label": "Bundle"},
 }
 
 

@@ -17,7 +17,7 @@ const QUOTES = [
   },
   {
     quote:
-      "Paid $49 once. Owned the PDF, the badge, the template. No subscriptions. Rare these days.",
+      "Paid $199 once. Owned the PDF, the badge, the template. No subscriptions. Rare these days.",
     name: "Sofia Jäger",
     role: "Compliance Lead · Nordheim",
     img: "https://images.unsplash.com/photo-1652471943570-f3590a4e52ed?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NzY5NDA2Nzl8MA&ixlib=rb-4.1.0&q=85",

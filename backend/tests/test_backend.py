@@ -121,7 +121,7 @@ def test_checkout_and_full_report_high_risk(s):
     assert r_pay.status_code == 200
     pay = r_pay.json()
     assert pay["status"] == "succeeded"
-    assert pay["amount"] == 79  # default tier is 'pro'
+    assert pay["amount"] == 199  # default tier is 'pro'
     assert pay["tier"] == "pro"
     assert pay["payment_id"].startswith("mock_pay_")
 

@@ -15,20 +15,20 @@ const TIERS = [
   {
     id: "starter",
     name: "Starter",
-    price: 29,
+    price: 79,
     tagline: "Single system · essentials",
   },
   {
     id: "pro",
     name: "Pro",
-    price: 79,
+    price: 199,
     tagline: "Single system · everything legal needs",
     popular: true,
   },
   {
     id: "bundle",
     name: "Bundle",
-    price: 149,
+    price: 399,
     tagline: "5 systems · portfolio view",
   },
 ];

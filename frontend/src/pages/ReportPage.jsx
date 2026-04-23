@@ -261,7 +261,7 @@ export default function ReportPage() {
               {report.tier === "starter" && (
                 <div className="border-t border-foreground/15 pt-3 mt-2" data-testid="tier-upgrade-hint">
                   <p className="text-xs text-foreground/60 leading-relaxed mb-2">
-                    FRIA starter, supplier questionnaire, compliance badge, and GC-invite email are available on Pro ($79) and Bundle ($149).
+                    FRIA starter, supplier questionnaire, compliance badge, and GC-invite email are available on Pro ($199) and Bundle ($399).
                   </p>
                   <a
                     href="#pricing"

@@ -40,7 +40,7 @@ export default function ResultsPage() {
       ? `Your EU AI Act risk: ${meta.label} (${result.score}/100)`
       : "Your EU AI Act scorecard",
     description: result
-      ? `Your AI system classified as ${meta.label} under the EU AI Act 2026. Unlock the full report with obligations, FRIA, supplier questionnaire, and deadlines for $49.`
+      ? `Your AI system classified as ${meta.label} under the EU AI Act 2026. Unlock the full report with obligations, FRIA, supplier questionnaire, and deadlines from $79.`
       : "Your EU AI Act compliance scorecard results.",
     canonical: typeof window !== "undefined" ? window.location.href : "",
   });
@@ -131,7 +131,7 @@ export default function ResultsPage() {
                     className="inline-flex items-center gap-2 h-12 px-6 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow transition-all"
                     data-testid="unlock-report-btn"
                   >
-                    <Lock className="h-4 w-4" /> Pick a tier · from $29
+                    <Lock className="h-4 w-4" /> Pick a tier · from $79
                   </button>
                 )}
                 {result.paid && (
@@ -186,9 +186,9 @@ export default function ResultsPage() {
               </div>
               <ul className="divide-y divide-foreground/10">
                 {[
-                  { tier: "Starter", price: "$29", items: "Score · obligations · deadlines · penalty · PDF" },
-                  { tier: "Pro", price: "$79", items: "+ FRIA · compliance badge · supplier questionnaire · GC invite", popular: true },
-                  { tier: "Bundle", price: "$149", items: "5 systems · portfolio compare + PDF export" },
+                  { tier: "Starter", price: "$79", items: "Score · obligations · deadlines · penalty · PDF" },
+                  { tier: "Pro", price: "$199", items: "+ FRIA · compliance badge · supplier questionnaire · GC invite", popular: true },
+                  { tier: "Bundle", price: "$399", items: "5 systems · portfolio compare + PDF export" },
                 ].map((t, i) => (
                   <li key={i} className="px-5 py-4">
                     <div className="flex items-center justify-between mb-1">

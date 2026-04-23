@@ -28,9 +28,9 @@ const JSONLD = {
       operatingSystem: "Web",
       url: ORIGIN,
       offers: [
-        { "@type": "Offer", name: "Starter", price: "29", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
-        { "@type": "Offer", name: "Pro", price: "79", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
-        { "@type": "Offer", name: "Bundle (5 systems)", price: "149", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
+        { "@type": "Offer", name: "Starter", price: "79", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
+        { "@type": "Offer", name: "Pro", price: "199", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
+        { "@type": "Offer", name: "Bundle (5 systems)", price: "399", priceCurrency: "USD", availability: "https://schema.org/InStock", priceValidUntil: "2026-09-01" },
       ],
       aggregateRating: {
         "@type": "AggregateRating",
@@ -42,7 +42,7 @@ const JSONLD = {
       "@type": "FAQPage",
       mainEntity: [
         { "@type": "Question", name: "Is this legal advice?", acceptedAnswer: { "@type": "Answer", text: "No. This is a diagnostic tool mapped to publicly available EU AI Act text." } },
-        { "@type": "Question", name: "Which tier should I pick?", acceptedAnswer: { "@type": "Answer", text: "Starter $29 for the essentials, Pro $79 for legal-ready artifacts, Bundle $149 for 5 systems with portfolio compare." } },
+        { "@type": "Question", name: "Which tier should I pick?", acceptedAnswer: { "@type": "Answer", text: "Starter $79 for the essentials, Pro $199 for legal-ready artifacts, Bundle $399 for 5 systems with portfolio compare." } },
         { "@type": "Question", name: "Is this a subscription?", acceptedAnswer: { "@type": "Answer", text: "No. Every tier is a one-time payment with lifetime access." } },
         { "@type": "Question", name: "Which AI Act version?", acceptedAnswer: { "@type": "Answer", text: "Regulation (EU) 2024/1689 with 2025–2027 phased deadlines." } },
       ],
@@ -52,9 +52,9 @@ const JSONLD = {
 
 export default function Landing() {
   useSeo({
-    title: "EU AI Act Compliance — Classify your AI risk in 5 minutes · from $29",
+    title: "EU AI Act Compliance — Classify your AI risk in 5 minutes · from $79",
     description:
-      "Free 10-question EU AI Act 2026 scorecard. Instant risk tier, FRIA starter, obligations checklist, supplier questionnaire, portfolio compare. One-time pricing from $29. By Roy's Enterprise.",
+      "Professional EU AI Act 2026 compliance tooling. Risk scorecard, FRIA starter, obligations checklist, supplier questionnaire, portfolio compare. One-time pricing from $79 — audit-grade at a fraction of big-four cost. By Roy's Enterprise.",
     canonical: ORIGIN + "/",
     keywords:
       "EU AI Act, EU AI Act 2026, AI Act compliance, FRIA template, Annex III, GPAI, Article 6, Article 27, high-risk AI, AI compliance tool, AI risk assessment, Regulation 2024/1689",

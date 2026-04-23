@@ -1,34 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Check, Sparkles, Crown, Layers } from "lucide-react";
+import { Check, Sparkles, Layers } from "lucide-react";
 
 const TIERS = [
   {
-    id: "free",
-    name: "Free",
-    price: "$0",
-    priceNote: "quiz only",
-    tagline: "Find out which tier you land in.",
-    features: [
-      "10-question diagnostic",
-      "Risk tier label (e.g., High-Risk)",
-      "Share the tier to your team",
-    ],
-    locked: [
-      "Risk score 0–100",
-      "Obligations checklist",
-      "Any downloadable artifact",
-    ],
-    cta: { label: "Take the free quiz", to: "/quiz?tier=free" },
-    icon: null,
-    accent: null,
-  },
-  {
     id: "starter",
     name: "Starter",
-    price: "$29",
+    price: "$79",
     priceNote: "one-time · 1 system",
-    tagline: "The essentials — bring it to your next stand-up.",
+    tagline: "Everything your first AI audit needs.",
     features: [
       "Full 0–100 risk score",
       "Obligations checklist (all tiers)",
@@ -37,14 +17,14 @@ const TIERS = [
       "Branded PDF download",
       "Shareable report link",
     ],
-    cta: { label: "Start quiz · unlock $29", to: "/quiz?tier=starter" },
+    cta: { label: "Start quiz · unlock $79", to: "/quiz?tier=starter" },
     icon: null,
     accent: "starter",
   },
   {
     id: "pro",
     name: "Pro",
-    price: "$79",
+    price: "$199",
     priceNote: "one-time · 1 system",
     tagline: "What your legal team actually needs.",
     features: [
@@ -54,8 +34,9 @@ const TIERS = [
       "Supplier questionnaire (CSV, 22 Q)",
       "Invite-your-GC email flow",
       "India DPDP findings",
+      "Priority regulatory updates",
     ],
-    cta: { label: "Start quiz · unlock $79", to: "/quiz?tier=pro" },
+    cta: { label: "Start quiz · unlock $199", to: "/quiz?tier=pro" },
     icon: Sparkles,
     accent: "pro",
     popular: true,
@@ -63,18 +44,18 @@ const TIERS = [
   {
     id: "bundle",
     name: "Bundle",
-    price: "$149",
+    price: "$399",
     priceNote: "one-time · 5 systems",
     tagline: "Audit the full AI portfolio once.",
     features: [
       "Everything in Pro × 5 reports",
       "Portfolio comparison view",
       "Comparison PDF export",
-      "Priority regulatory updates",
+      "White-label branded PDFs",
       "Lifetime access across all 5",
-      "Effective price: $29.80 per system",
+      "Effective price: $79.80 per system",
     ],
-    cta: { label: "Start quiz · unlock $149", to: "/quiz?tier=bundle" },
+    cta: { label: "Start quiz · unlock $399", to: "/quiz?tier=bundle" },
     icon: Layers,
     accent: "bundle",
   },
@@ -100,8 +81,9 @@ export default function Pricing() {
             </h2>
           </div>
           <div className="md:col-span-5 md:col-start-8 text-foreground/70 leading-relaxed">
-            Competitors charge $500–5,000 for EU AI Act compliance audits. We ship the same obligations
-            mapping as an editable artifact — for the cost of a lunch. Pick the layer that fits.
+            Big-four audit firms quote <span className="mono text-foreground">$8,000 – $25,000</span> for
+            an EU AI Act readiness review. We ship the same obligations mapping as a signed, editable
+            artifact — at a fraction of the price, and without a six-week engagement.
           </div>
         </div>
 
@@ -116,11 +98,11 @@ export default function Pricing() {
             </div>
           </div>
           <div className="label-eyebrow text-foreground/60">
-            Rises 50% on 1 Sep 2026 · first 500 customers only
+            Rises 40% on 1 Sep 2026 · first 500 customers only
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-l border-foreground/15">
+        <div className="grid grid-cols-1 md:grid-cols-3 border-t border-l border-foreground/15">
           {TIERS.map((t) => {
             const isPopular = !!t.popular;
             const Icon = t.icon;
@@ -131,8 +113,6 @@ export default function Pricing() {
             const mutedText = isPopular ? "text-background/70" : "text-foreground/70";
             const ctaCls = isPopular
               ? "bg-[#0020C2] text-white hover:bg-[#00189B]"
-              : t.id === "free"
-              ? "border border-foreground/30 hover:bg-foreground hover:text-background"
               : t.id === "bundle"
               ? "bg-foreground text-background hover:bg-[#0020C2] hover:text-white"
               : "border border-foreground/30 hover:bg-foreground hover:text-background";
@@ -140,7 +120,7 @@ export default function Pricing() {
             return (
               <div
                 key={t.id}
-                className={`relative p-8 md:p-8 border-r border-b border-foreground/15 ${cardCls} flex flex-col`}
+                className={`relative p-8 md:p-10 border-r border-b border-foreground/15 ${cardCls} flex flex-col`}
                 data-testid={`pricing-${t.id}-card`}
               >
                 {isPopular && (
@@ -161,7 +141,7 @@ export default function Pricing() {
                   <span className="font-display text-6xl tracking-tighter">{t.price}</span>
                 </div>
                 <p className={`mb-6 text-sm ${mutedText}`}>{t.tagline}</p>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 mb-8">
                   {t.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm">
                       <Check className={`h-4 w-4 mt-0.5 shrink-0 ${isPopular ? "text-[#EAB308]" : t.id === "bundle" ? "text-[#0020C2]" : "text-[#16A34A]"}`} />
@@ -169,16 +149,6 @@ export default function Pricing() {
                     </li>
                   ))}
                 </ul>
-                {t.locked && (
-                  <ul className="space-y-2 mb-6 opacity-50">
-                    {t.locked.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm line-through">
-                        <span className="mono text-xs mt-0.5 w-4">×</span>
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
                 <Link
                   to={t.cta.to}
                   onClick={() => pickTier(t.id)}

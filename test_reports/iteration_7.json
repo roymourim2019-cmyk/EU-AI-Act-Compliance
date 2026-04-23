@@ -1,0 +1,42 @@
+{
+  "summary": "Iteration 10 — tier price bump to Starter $79 / Pro $199 / Bundle $399, Free tier card removed, Emergent badge hidden. Backend: all 41 pytest tests pass (updated test_tiers.py and test_backend.py for new amounts). /api/checkout/mock returns amount 79/199/399 for the 3 tiers with credits 1/1/5; default/invalid tier still falls back to 'pro' (now $199); 402 gating and classification tiers unchanged. Frontend verified on the preview URL: Pricing section renders exactly 3 cards (pricing-starter-card/$79, pricing-pro-card/$199 'Most popular' inverted-black, pricing-bundle-card/$399); pricing-free-card not in DOM. CTAs (pricing-{tier}-cta) navigate to /quiz?tier=<id> and persist sessionStorage.preferred_tier. Landing body contains zero 'Made with Emergent', 'Book a call', 'hello@roys-enterprise.com', '$29' or '$149' occurrences. Emergent badge (#emergent-badge) exists in DOM but is_visible=False (display:none applied). Hero CTA 'from $79' present. ResultsPage (unpaid, high-risk) shows tier-ladder sidebar with $79 / $199 / $399 and 'Pick a tier · from $79' button. MockCheckoutModal: tier-option-starter=$79, tier-option-pro=$199 POPULAR, tier-option-bundle=$399; pay button label updates correctly: 'PAY $79 · STARTER (MOCK)' → 'PAY $399 · BUNDLE (MOCK)' → 'PAY $79 · STARTER (MOCK)'. JSON-LD offers array on landing contains '79', '199', '399'. FAQ contains the new law-firm-audit question. End-to-end quiz→results→mock-checkout flow works via the public URL.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Hero", "issues": ["/app/frontend/src/components/Hero.jsx line 110 still reads 'No signup required for the free tier.' — stale copy now that the Free tier has been removed. Should be rephrased (e.g., 'No signup required to see your risk classification.') for price-narrative consistency."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_tiers.py",
+    "/app/backend/tests/test_rate_limits.py",
+    "/app/backend/tests/test_recover.py",
+    "/app/backend/tests/test_stats.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Update Hero.jsx microcopy: remove the trailing 'for the free tier.' now that the Free tier no longer exists.",
+    "(Carry-over from iter 9) Consider hiding the tier-ladder on PAID ResultsPage; currently only its CTA hides.",
+    "(Carry-over) server.py /api/checkout/mock silently coerces invalid tier → 'pro'. Consider returning 400 to surface client bugs (now even more impactful because price jumped from $79 → $199)."
+  ],
+  "critical_code_review_comments": [
+    "Pricing.jsx: CTA labels hardcode the USD amount ('Start quiz · unlock $79'). Lift tier prices to a single source (PRICING_TIERS export or /api/pricing) so price changes don't require editing 6+ components (Pricing, MockCheckoutModal, ExitIntentModal, Hero, ResultsPage tier-ladder, FAQ, Landing JSON-LD).",
+    "MockCheckoutModal.jsx duplicates the tier price list that already exists in backend TIER_PRICING and frontend Pricing TIERS. Expose a /api/pricing endpoint and fetch once on mount to eliminate the 3-way drift risk.",
+    "Hero.jsx: 'No signup required for the free tier.' is contradictory after Free tier removal — active bug in messaging.",
+    "Landing.jsx JSON-LD offers array is inlined; refactor to map over the same PRICING_TIERS constant to prevent SEO/price drift.",
+    "Emergent-badge hide uses both inline style and CSS safety net — good. Consider also aria-hidden=\"true\" for screen-reader parity."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_tiers.py",
+    "/app/backend/tests/test_backend.py"
+  ],
+  "success_rate": {"backend": "100% (41/41)", "frontend": "100% on checked assertions (~25 boolean/string checks across pricing, modal, results, JSON-LD, badge, forbidden terms)"},
+  "test_credentials": "None required.",
+  "seed_data_creation": "~7 additional TEST_-prefixed quiz sessions + 1 paid (high-risk tier=starter via end-to-end UI flow) created against preview URL during this run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "TIER_PRICING in backend/server.py: starter=79/1cr, pro=199/1cr, bundle=399/5cr. /api/checkout/mock still silently falls back to 'pro' for missing/invalid tier (now $199). Frontend price is duplicated across: Pricing.jsx TIERS, MockCheckoutModal.jsx tiers array, ExitIntentModal footer, Hero CTA text, ResultsPage.jsx tier-ladder (lines 189-191), Landing.jsx JSON-LD offers, FAQ copy, Testimonials. Emergent badge hidden via inline display:none in public/index.html + index.css #emergent-badge rule — element still present in DOM (is_visible=False). 'Roy's Enterprise' brand name in Footer/Landing is the company brand, NOT the removed Enterprise tier card. Only remaining stale-copy hit: Hero.jsx line 110 mentions 'the free tier'.",
+  "rca of the issue": "N/A — no functional bugs. Stale assertions in test_tiers.py (amounts 29/79/149) and test_backend.py (pay amount 79 expectation) were updated to match the new TIER_PRICING map (79/199/399)."
+}
