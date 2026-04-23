@@ -26,15 +26,14 @@ Build a professional SaaS landing page and interactive compliance tool for the E
 - CSV FRIA export (client-side)
 - Compliance badge SVG generated server-side
 
-## Implemented (2026-02-23 · iter 2)
-- ✅ All iter 1 features (landing, quiz, DPDP toggle, results, mock checkout, paid report with FRIA + badge + PDF + CSV)
-- ✅ Rate limiting: 10/min on `/api/quiz/submit`, 5/min on `/api/subscribe` via slowapi; custom X-Forwarded-For key function for k8s ingress
-- ✅ CORS locked to preview URL + localhost:3000 (env-driven)
-- ✅ PostHog events wired: `quiz_started`, `quiz_completed`, `results_viewed`, `unlock_clicked`, `share_clicked`, `checkout_completed`, `pdf_downloaded`, `newsletter_subscribed` — all dedup'd via useRef to avoid StrictMode double-fire
-- ✅ "Bookmark this result" box on Results page with copy-to-clipboard
-- ✅ "Retrieve report" UUID-validated form in Footer (jumps to `/results/:id`)
-- ✅ 21/21 backend pytest passing (including rate-limit + CORS tests)
-- ✅ Frontend E2E re-tested: all PostHog events captured, retrieve-form works
+## Implemented (2026-02-23 · iter 3)
+- ✅ All iter 1–2 features (landing, quiz, DPDP, results, mock $49 checkout, paid report, PDF, FRIA, compliance badge, PostHog events, rate limiting, retrieve by session ID, bookmark box)
+- ✅ **Self-service report recovery**: `POST /api/reports/recover` — returns up to 5 most-recent PAID sessions for a buyer email, sorted by paid_at desc. Unpaid sessions excluded (no free-user enumeration). Rate-limited 3/min.
+- ✅ `/recover` page with form, rich card list of paid reports (color-coded badges, score, paid date), click-to-open, empty state with "Start new scorecard" CTA, "Why not just log in?" explainer.
+- ✅ Footer link "Lost your link? Recover by email →" → /recover
+- ✅ Quiz submit rate limit bumped 10/min → **20/min**
+- ✅ 28/28 backend pytest passing (added test_recover.py + updated test_rate_limits.py)
+- ✅ `/app/DEPLOYMENT_CORS.md` — copy-paste ingress CORS configs for 5 prod hosts
 
 ## Next Actions / Backlog
 - **P0**: Wire real Razorpay when user provides Test Key ID + Secret
