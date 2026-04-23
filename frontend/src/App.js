@@ -7,6 +7,7 @@ import Landing from "@/pages/Landing";
 import QuizPage from "@/pages/QuizPage";
 import ResultsPage from "@/pages/ResultsPage";
 import ReportPage from "@/pages/ReportPage";
+import RecoverPage from "@/pages/RecoverPage";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/results/:sessionId" element={<ResultsPage />} />
           <Route path="/report/:sessionId" element={<ReportPage />} />
+          <Route path="/recover" element={<RecoverPage />} />
         </Routes>
         <Toaster position="bottom-right" />
       </BrowserRouter>

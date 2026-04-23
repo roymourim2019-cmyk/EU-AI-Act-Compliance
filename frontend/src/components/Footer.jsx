@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import { toast } from "sonner";
@@ -103,6 +103,13 @@ export default function Footer() {
               Retrieve <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </form>
+          <Link
+            to="/recover"
+            className="mt-3 inline-flex items-center gap-1 label-eyebrow text-background/60 hover:text-background sharp-link"
+            data-testid="recover-link"
+          >
+            Lost your link? Recover by email <ArrowRight className="h-3 w-3" />
+          </Link>
         </div>
       </div>
 

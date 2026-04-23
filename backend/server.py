@@ -77,6 +77,10 @@ class SubscribeRequest(BaseModel):
     email: EmailStr
 
 
+class RecoverRequest(BaseModel):
+    email: EmailStr
+
+
 # ---------- EU AI Act scoring logic ----------
 # 10 questions, ordered. Each can trigger a category.
 QUESTIONS_SCHEMA = {
@@ -331,6 +335,23 @@ async def subscribe(request: Request, req: SubscribeRequest):
         upsert=True,
     )
     return {"status": "subscribed"}
+
+
+@api_router.post("/reports/recover")
+@limiter.limit("3/minute")
+async def recover_reports(request: Request, req: RecoverRequest):
+    """Return up to 5 most-recent PAID sessions for the given buyer email.
+
+    Unpaid sessions are excluded so this endpoint cannot be used to enumerate
+    free quiz takers. The response shape is identical whether any sessions
+    exist or not, to avoid leaking account existence.
+    """
+    cursor = db.quiz_sessions.find(
+        {"email": req.email, "paid": True},
+        {"_id": 0, "session_id": 1, "score": 1, "risk_level": 1, "risk_label": 1, "paid_at": 1, "created_at": 1},
+    ).sort("paid_at", -1).limit(5)
+    sessions = await cursor.to_list(length=5)
+    return {"email": req.email, "sessions": sessions}
 
 
 @api_router.get("/report/{session_id}")

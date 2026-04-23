@@ -57,13 +57,29 @@ def test_subscribe_rate_limit_429():
 
 
 def test_quiz_submit_rate_limit_429():
-    """11th quiz submit within 1 minute from same IP should get 429."""
+    """21st quiz submit within 1 minute from same IP should get 429 (limit bumped to 20/min)."""
     ip = f"10.20.40.{(uuid.uuid4().int % 250) + 1}"
     headers = {"X-Forwarded-For": ip, "Content-Type": "application/json"}
     codes = []
     payload = {"answers": _answers(), "dpdp_enabled": False}
-    for i in range(12):
+    for i in range(22):
         r = requests.post(f"{API}/quiz/submit", json=payload, headers=headers)
         codes.append(r.status_code)
-    assert codes[:10] == [200] * 10, f"First 10 should be 200, got {codes}"
-    assert 429 in codes[10:], f"Expected 429 in {codes[10:]}, got {codes}"
+    assert codes[:20] == [200] * 20, f"First 20 should be 200, got {codes}"
+    assert 429 in codes[20:], f"Expected 429 in {codes[20:]}, got {codes}"
+
+
+def test_recover_rate_limit_429():
+    """4th recover POST within 1 minute from same IP should get 429 (limit 3/min)."""
+    ip = f"10.20.50.{(uuid.uuid4().int % 250) + 1}"
+    headers = {"X-Forwarded-For": ip, "Content-Type": "application/json"}
+    codes = []
+    for i in range(5):
+        r = requests.post(
+            f"{API}/reports/recover",
+            json={"email": f"TEST_rlrec_{i}@example.com"},
+            headers=headers,
+        )
+        codes.append(r.status_code)
+    assert codes[:3] == [200, 200, 200], f"First 3 should be 200, got {codes}"
+    assert 429 in codes[3:], f"Expected 429 in {codes[3:]}, got {codes}"
