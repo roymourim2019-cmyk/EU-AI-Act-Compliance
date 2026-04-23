@@ -262,7 +262,7 @@ async def root():
 
 
 @api_router.post("/quiz/submit", response_model=QuizResult)
-@limiter.limit("10/minute")
+@limiter.limit("20/minute")
 async def submit_quiz(request: Request, submission: QuizSubmission):
     classification = classify_and_score(submission.answers)
     risk_level = classification["risk_level"]
