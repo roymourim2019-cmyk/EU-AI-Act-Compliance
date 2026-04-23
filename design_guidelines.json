@@ -1,0 +1,95 @@
+{
+  "theme_and_archetype": {
+    "theme": "hybrid_light_dark",
+    "archetype": "4 (Swiss & High-Contrast)",
+    "reasoning": "Legal/Enterprise compliance tools require absolute authority, clarity, and trust. The design must feel like a premium editorial publication or a sophisticated legal instrument, not a generic tech-bro startup. Color exists to guide action and signal risk, not for decoration."
+  },
+  "typography": {
+    "headings": {
+      "family": "'Cabinet Grotesk', sans-serif",
+      "import_url": "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700,400,900&display=swap",
+      "rules": "Use for all headings. Tight letter spacing (`tracking-tight` or `tracking-tighter`). Maximum size for Hero is `text-6xl`. Never use 'Inter' or 'Roboto'."
+    },
+    "body": {
+      "family": "'IBM Plex Sans', sans-serif",
+      "import_url": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap",
+      "rules": "Use for body copy, form inputs, and legal text. Loose line-height (`leading-relaxed`) for readability. Small labels MUST be Uppercase + Wide Spacing (`tracking-widest`)."
+    }
+  },
+  "color_system": {
+    "light_mode": {
+      "background": "#FDFDFD",
+      "surface": "#F4F4F5",
+      "border": "#E4E4E7",
+      "text_primary": "#09090B",
+      "text_secondary": "#52525B"
+    },
+    "dark_mode": {
+      "background": "#0A0A0A",
+      "surface": "#121212",
+      "border": "#27272A",
+      "text_primary": "#FAFAFA",
+      "text_secondary": "#A1A1AA"
+    },
+    "accents": {
+      "brand_primary": "#0020C2",
+      "brand_hover": "#00189B",
+      "risk_prohibited": "#DC2626",
+      "risk_high": "#EA580C",
+      "risk_limited": "#EAB308",
+      "risk_minimal": "#16A34A",
+      "risk_general": "#2563EB"
+    },
+    "rules": "Colors must be stark. The UI should be predominantly monochrome (black/white/gray). Use accent colors strictly for the Risk Level Badges, the Scorecard (0-100), and the Primary CTAs. Do not use gradients."
+  },
+  "layout_and_spacing": {
+    "marketing_pages": "Use pure HTML/Tailwind for the landing page. Grid Mode A (Tetris Grid). Wide gaps (`gap-8` to `gap-12`). Asymmetry creates tension. Heavy use of negative space. Padding `p-8` to `p-16`.",
+    "dashboard_tool": "Use Shadcn components heavily. Grid Mode B (Control Room). Strict grid hierarchy. Dense and compact spacing for the quiz/flowchart. Every pixel utilized.",
+    "borders_and_radii": "Sharp and brutalist. Set `--radius: 0rem;` or max `0.25rem`. Use 1px solid borders for definition instead of soft shadows. Use `border-collapse` style for feature grids."
+  },
+  "motion_and_interactions": {
+    "rules": "Micro-interactions only. Crisp, fast transitions. No lazy-loading images or excessive parallax. Use `transition-all duration-200 ease-out` for hover states. Hover states MUST explicitly set text color (e.g., `hover:bg-zinc-900 hover:text-white`)."
+  },
+  "component_guidelines": {
+    "buttons": "Sharp corners. High contrast. `bg-zinc-900 text-white hover:bg-black` for default, `bg-[#0020C2] text-white hover:bg-[#00189B]` for primary checkout CTA.",
+    "quiz_flowchart": "Use heavily customized Shadcn RadioGroup. Style as large, clickable cards with 1px borders. Active state: `border-[#0020C2] bg-blue-50/10`.",
+    "scorecard": "Large, bold typography (`text-6xl`). Color-coded badge based on risk level. Use `IBM Plex Sans` for the numeric score.",
+    "compliance_badge": "SVG must have sharp geometry, high contrast black/white base, and a pop of the corresponding risk color.",
+    "testimonials": "Monochrome photos if possible, harsh grid layout, `border-b` dividers instead of cards."
+  },
+  "media": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1673106349323-db411e27ec13?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMG1vZGVybiUyMGFyY2hpdGVjdHVyZSUyMGJsYWNrJTIwYW5kJTIwd2hpdGV8ZW58MHx8fHwxNzc2OTQwNjcwfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Black and white photo of an abstract building. Use as a subtle hero background with heavy overlay (`bg-black/80` for dark mode, `bg-white/90` for light mode)."
+    },
+    "compliance_abstract": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/5728f096-2a36-4e51-8526-8e5d20dba5fa/images/fb4eb548d3b1e0e13ab899e0f517d4bbba4d7d74c7e4e6d23b085d17c2a5fe74.png",
+      "description": "Macro shot of a legal compliance stamp. Perfect for the Report/PDF feature highlight section."
+    },
+    "testimonials": [
+      {
+        "url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NzY5NDA2Nzl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Testimonial Headshot 1"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NzY5NDA2Nzl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Testimonial Headshot 2"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1652471943570-f3590a4e52ed?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NzY5NDA2Nzl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Testimonial Headshot 3"
+      }
+    ],
+    "logos": [
+      {
+        "url": "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHwzfHxnb29nbGUlMjBsb2dvfGVufDB8fHx8MTc3Njk0MDY3NXww&ixlib=rb-4.1.0&q=85",
+        "description": "Google Logo"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1704089272382-201cf5c1bbbb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTN8MHwxfHNlYXJjaHwyfHxtaWNyb3NvZnQlMjBsb2dvfGVufDB8fHx8MTc3Njk0MDY3NXww&ixlib=rb-4.1.0&q=85",
+        "description": "Microsoft Logo Box"
+      }
+    ]
+  },
+  "testing_requirements": "All interactive and key informational elements MUST include a `data-testid` attribute (e.g., `data-testid=\"start-quiz-button\"`, `data-testid=\"risk-score-badge\"`)."
+}
