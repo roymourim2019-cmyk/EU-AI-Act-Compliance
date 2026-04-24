@@ -58,7 +58,50 @@ export default function Pricing() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 border-t border-l border-foreground/15">
+        <div className="grid grid-cols-1 md:grid-cols-4 border-t border-l border-foreground/15">
+          {/* Free preview card — conversion teaser, not a product */}
+          <div
+            className="relative p-8 md:p-8 border-r border-b border-foreground/15 bg-background text-foreground flex flex-col"
+            data-testid="pricing-free-card"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="label-eyebrow flex items-center gap-2 text-foreground/60">
+                Free preview
+              </div>
+              <span className="label-eyebrow text-foreground/40">no card needed</span>
+            </div>
+            <div className="flex items-baseline gap-2 mb-5">
+              <span className="font-display text-6xl tracking-tighter" data-testid="pricing-free-amount">
+                $0
+              </span>
+            </div>
+            <p className="text-sm text-foreground/70 mb-6">See what risk category you're in before you pay.</p>
+            <ul className="space-y-2 mb-8">
+              {[
+                "Risk classification (e.g. High Risk)",
+                "1 sample obligation",
+                "Penalty ceiling headline",
+                "Obligation count (the rest blurred)",
+              ].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm">
+                  <Check className="h-4 w-4 mt-0.5 shrink-0 text-foreground/40" />
+                  <span>{f}</span>
+                </li>
+              ))}
+              <li className="flex items-start gap-2 text-sm text-foreground/40 line-through">
+                <span className="h-4 w-4 mt-0.5 shrink-0">×</span>
+                <span>Score, FRIA, PDF, supplier CSV, badge</span>
+              </li>
+            </ul>
+            <Link
+              to="/quiz"
+              className="mt-auto inline-flex items-center justify-center w-full h-12 label-eyebrow border border-foreground/30 hover:bg-foreground hover:text-background transition-all duration-200"
+              data-testid="pricing-free-cta"
+            >
+              Try the scorecard free
+            </Link>
+          </div>
+
           {tiers.map((t) => {
             const isPopular = !!t.popular;
             const Icon = ACCENT_ICON[t.id];

@@ -250,6 +250,90 @@ export default function ResultsPage() {
         </section>
         )}
 
+        {/* Free-tier teaser — unpaid users. One obligation + blurred count + penalty ceiling. */}
+        {!result.paid && result.obligations?.length > 0 && (
+        <section className="border-b border-foreground/10" data-testid="free-teaser-section">
+          <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-14 md:py-16 grid md:grid-cols-12 gap-10">
+            <div className="md:col-span-5">
+              <div className="label-eyebrow text-foreground/60 mb-4">§ Free preview</div>
+              <h2 className="font-display text-3xl md:text-4xl tracking-tighter leading-[1.05] mb-4">
+                One obligation.<br /> On the house.
+              </h2>
+              <p className="text-foreground/70 leading-relaxed">
+                Here's the lightest duty on your list — just enough to show the analysis is real.
+                The remaining {Math.max(result.obligations.length - 1, 0)} obligations, deadlines, penalty breakdown,
+                PDF, FRIA, and supplier questionnaire unlock from <span className="mono text-foreground">${pricing.starter.amount_usd}</span>.
+              </p>
+              <div className="mt-6 border border-foreground/15 p-4" data-testid="free-penalty-teaser">
+                <div className="label-eyebrow text-foreground/60 mb-2">Penalty ceiling</div>
+                <p className="font-display text-xl tracking-tight leading-snug">
+                  {result.penalties.split(".")[0]}.
+                </p>
+                <div className="mt-3 text-xs text-foreground/50">
+                  Exact liability for your tier after payment
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-7">
+              <div className="border border-foreground/15" data-testid="free-obligation-card">
+                {/* One unlocked obligation */}
+                <div className="p-5 md:p-6 border-b border-foreground/15 bg-foreground/[0.02]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="label-eyebrow text-[#16A34A]">● Unlocked · obligation /01</span>
+                    <span className="label-eyebrow text-foreground/50">Sample</span>
+                  </div>
+                  <p className="text-foreground/90 leading-relaxed" data-testid="free-obligation-text">
+                    {result.obligations[0]}
+                  </p>
+                </div>
+
+                {/* Blurred list — count visible, text is a teaser */}
+                <ul className="divide-y divide-foreground/10" data-testid="free-obligation-blurred-list">
+                  {result.obligations.slice(1, 6).map((o, i) => (
+                    <li
+                      key={i}
+                      className="relative p-5 md:p-6 flex items-start gap-4 select-none"
+                    >
+                      <span className="mono text-xs text-foreground/40 w-8 shrink-0">
+                        /{String(i + 2).padStart(2, "0")}
+                      </span>
+                      <span
+                        className="text-sm text-foreground/90 leading-relaxed"
+                        style={{ filter: "blur(5px)", userSelect: "none" }}
+                        aria-hidden
+                      >
+                        {o}
+                      </span>
+                    </li>
+                  ))}
+                  {result.obligations.length > 6 && (
+                    <li className="p-5 label-eyebrow text-foreground/50 text-center border-t border-foreground/10">
+                      + {result.obligations.length - 6} more · locked
+                    </li>
+                  )}
+                </ul>
+
+                {/* CTA footer */}
+                <div className="border-t border-foreground/15 p-5 bg-foreground text-background flex items-center justify-between gap-4">
+                  <div>
+                    <div className="label-eyebrow text-background/60 mb-0.5">Unlock all {result.obligations.length}</div>
+                    <div className="font-display text-lg tracking-tight">+ PDF · FRIA · Supplier CSV · Badge</div>
+                  </div>
+                  <button
+                    onClick={() => { track("unlock_clicked", { risk_level: result.risk_level, placement: "free-teaser" }); setCheckoutOpen(true); }}
+                    className="inline-flex items-center gap-2 h-11 px-4 bg-[#0020C2] text-white hover:bg-[#00189B] label-eyebrow whitespace-nowrap"
+                    data-testid="free-teaser-unlock-btn"
+                  >
+                    <Lock className="h-4 w-4" /> From ${pricing.starter.amount_usd}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        )}
+
         {result.paid && result.dpdp_findings?.length > 0 && (
           <section className="border-b border-foreground/10">
             <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-12">
